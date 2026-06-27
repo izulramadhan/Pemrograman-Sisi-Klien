@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Mahasiswa & Kinerja Akademik</title>
+  <!-- Tailwind CSS v4 Play CDN -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono {
+      font-family: 'Fira Code', monospace;
+    }
+  </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-[#0B1E54] text-slate-300 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col justify-between border-r border-[#132A6D]">
+    <div>
+      <!-- Sidebar Header -->
+      <div class="h-16 flex items-center px-6 border-b border-[#132A6D]">
+        <h1 class="text-xl font-bold text-white tracking-wider flex items-center gap-2">
+          <span>Admin Panel</span>
+        </h1>
+      </div>
+      <!-- Sidebar Navigation -->
+      <nav class="p-4 space-y-2">
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#132A6D] text-white transition-all text-sm font-semibold shadow-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m-6-3h12" />
+          </svg>
+          <span>Data Mahasiswa</span>
+        </a>
+      </nav>
+    </div>
+    <!-- Sidebar Footer / Logout -->
+    <div class="p-4 border-t border-[#132A6D]">
+      <a href="login.html" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-950/30 hover:text-red-400 transition-all text-sm font-medium group">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 group-hover:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        <span>Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div id="sidebarOverlay" class="fixed inset-0 z-30 bg-black/40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+  <!-- Main Content Wrapper -->
+  <div class="lg:pl-64 w-full flex flex-col min-h-screen">
+    
+    <!-- Top Header -->
+    <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20 shadow-sm shadow-slate-100/50">
+      <div class="flex items-center gap-3">
+        <!-- Sidebar Toggle Button (Mobile) -->
+        <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-all cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <span class="text-xl font-bold text-slate-800">Manajemen Mahasiswa OOP</span>
+      </div>
+      <!-- User Profile Dropdown -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex flex-col text-right">
+          <span class="text-sm font-semibold text-slate-700">Administrator</span>
+          <span class="text-xs text-slate-400">admin@dashboard.com</span>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center font-bold text-slate-600 shadow-sm cursor-pointer hover:bg-slate-300 transition-all select-none">
+          A
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="flex-grow p-6 space-y-6">
+      
+      <!-- Stats Ringkasan Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Total Mahasiswa Card -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div class="p-3 bg-blue-50 text-[#1E56E3] rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Mahasiswa</p>
+            <h3 id="statTotal" class="text-2xl font-bold text-slate-800">0</h3>
+          </div>
+        </div>
+
+        <!-- Mahasiswa Aktif Card -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Mahasiswa Aktif</p>
+            <h3 id="statAktif" class="text-2xl font-bold text-emerald-600">0</h3>
+          </div>
+        </div>
+
+        <!-- Mahasiswa Tidak Aktif Card -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tidak Aktif</p>
+            <h3 id="statTidakAktif" class="text-2xl font-bold text-rose-600">0</h3>
+          </div>
+        </div>
+
+        <!-- Rata-rata IPS Card -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+          <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Rerata IPS Kelas</p>
+            <h3 id="statIpsRata" class="text-2xl font-bold text-amber-600">0.00</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dua Kolom Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Kolom Kiri: Tabel & Aksi Array (2/3 Lebar) -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Card Daftar Mahasiswa -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-bold text-slate-800">Daftar Mahasiswa</h2>
+                <p class="text-xs sm:text-sm text-slate-500">Kelola data akademik mahasiswa menggunakan kelas terstruktur</p>
+              </div>
+              <button 
+                onclick="openAddModal()" 
+                class="bg-[#0B1E54] hover:bg-[#132A6D] active:bg-[#071337] text-white font-semibold py-2.5 px-5 rounded-xl text-sm transition-all shadow-md shadow-blue-900/10 cursor-pointer flex items-center justify-center gap-2 self-start sm:self-auto group"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 transform group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Tambah Mahasiswa</span>
+              </button>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-[#0B1E54] text-white text-xs font-semibold tracking-wider">
+                    <th class="py-4 px-4">NIM</th>
+                    <th class="py-4 px-4">Nama</th>
+                    <th class="py-4 px-4 text-center">Nilai (T/U/U)</th>
+                    <th class="py-4 px-4 text-center">Akhir</th>
+                    <th class="py-4 px-4 text-center">Grade</th>
+                    <th class="py-4 px-4 text-center">IPS</th>
+                    <th class="py-4 px-4 text-center">Status</th>
+                    <th class="py-4 px-4 text-center w-52">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="studentTableBody" class="divide-y divide-slate-100 text-sm text-slate-700">
+                  <!-- Dynamically populated rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kolom Kanan: Aksi Array & Console Simulator (1/3 Lebar) -->
+        <div class="space-y-6">
+          
+          <!-- Card Aksi Array -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Operasi Array (List Mahasiswa)</h3>
+            <div class="grid grid-cols-1 gap-2">
+              <button 
+                onclick="triggerSortByNIM()" 
+                class="w-full py-2.5 px-4 rounded-xl text-left bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200 transition-all flex items-center justify-between group"
+              >
+                <span>sortByNIM()</span>
+                <span class="text-xs text-slate-400 group-hover:text-slate-600 transition-colors font-mono">NIM &uarr;&darr;</span>
+              </button>
+
+              <button 
+                onclick="triggerSortByStatus()" 
+                class="w-full py-2.5 px-4 rounded-xl text-left bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200 transition-all flex items-center justify-between group"
+              >
+                <span>sortByStatus()</span>
+                <span class="text-xs text-slate-400 group-hover:text-slate-600 transition-colors font-mono">Aktif &rarr; Pasif</span>
+              </button>
+
+              <button 
+                onclick="triggerJumlahAktifTidak()" 
+                class="w-full py-2.5 px-4 rounded-xl text-left bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold border border-slate-200 transition-all flex items-center justify-between group"
+              >
+                <span>jumlahAktifTidak()</span>
+                <span class="text-xs text-slate-400 group-hover:text-slate-600 transition-colors font-mono">Statistik Status</span>
+              </button>
+
+              <button 
+                onclick="triggerClearArray()" 
+                class="w-full py-2.5 px-4 rounded-xl text-left bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold border border-red-200 transition-all flex items-center justify-between group"
+              >
+                <span>clearArray()</span>
+                <span class="text-xs text-red-400 group-hover:text-red-600 transition-colors font-mono">Kosongkan List</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Console Simulator -->
+          <div class="bg-[#0A0F24] rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col h-[400px]">
+            <div class="bg-[#121936] px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-300 font-mono tracking-wider">Console Simulator (JS Log)</span>
+              <button 
+                onclick="clearConsole()" 
+                class="text-[10px] text-slate-400 hover:text-white transition-colors bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded font-mono"
+              >
+                Clear Log
+              </button>
+            </div>
+            <div id="consoleLog" class="p-4 flex-grow overflow-y-auto space-y-3 font-mono text-xs text-slate-300">
+              <!-- Logs dynamic entry -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+      &copy; 2026 Admin Dashboard Mahasiswa OOP. All rights reserved.
+    </footer>
+  </div>
+
+  <!-- Modal Form Tambah/Edit Mahasiswa -->
+  <div id="studentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-100 transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh]" id="modalCard">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-slate-100">
+        <h3 id="modalTitle" class="text-lg font-bold text-slate-800">Tambah Mahasiswa</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body (Form) -->
+      <form id="studentForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4 overflow-y-auto flex-grow">
+        <input type="hidden" id="editIndex" value="-1">
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label for="nim" class="block text-sm font-semibold text-slate-700">NIM</label>
+            <input 
+              type="text" 
+              id="nim" 
+              required 
+              placeholder="Contoh: 20211001"
+              class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm bg-slate-50"
+            >
+          </div>
+
+          <div class="space-y-1.5">
+            <label for="nama" class="block text-sm font-semibold text-slate-700">Nama Lengkap</label>
+            <input 
+              type="text" 
+              id="nama" 
+              required 
+              placeholder="Nama Lengkap"
+              class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm bg-slate-50"
+            >
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div class="space-y-1.5">
+            <label for="nilaiTugas" class="block text-xs font-semibold text-slate-700">Nilai Tugas (30%)</label>
+            <input 
+              type="number" 
+              id="nilaiTugas" 
+              min="0" max="100" 
+              required 
+              placeholder="0-100"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm bg-slate-50"
+            >
+          </div>
+
+          <div class="space-y-1.5">
+            <label for="nilaiUts" class="block text-xs font-semibold text-slate-700">Nilai UTS (30%)</label>
+            <input 
+              type="number" 
+              id="nilaiUts" 
+              min="0" max="100" 
+              required 
+              placeholder="0-100"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm bg-slate-50"
+            >
+          </div>
+
+          <div class="space-y-1.5">
+            <label for="nilaiUas" class="block text-xs font-semibold text-slate-700">Nilai UAS (40%)</label>
+            <input 
+              type="number" 
+              id="nilaiUas" 
+              min="0" max="100" 
+              required 
+              placeholder="0-100"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm bg-slate-50"
+            >
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label for="status" class="block text-sm font-semibold text-slate-700">Status Mahasiswa</label>
+          <select 
+            id="status" 
+            class="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm bg-slate-50"
+          >
+            <option value="Aktif">Aktif</option>
+            <option value="Tidak Aktif">Tidak Aktif</option>
+          </select>
+        </div>
+
+        <!-- Section Manage Courses (IPS) -->
+        <div class="border-t border-slate-100 pt-4 space-y-3">
+          <h4 class="text-sm font-bold text-slate-800">Manajemen Mata Kuliah (IPS)</h4>
+          
+          <!-- Input Inline Course -->
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-2 items-end">
+            <div class="sm:col-span-2 space-y-1">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase">Mata Kuliah</label>
+              <input type="text" id="courseNameInput" placeholder="Pemrograman Web" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white focus:outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase">SKS</label>
+              <input type="number" id="courseSksInput" min="1" max="6" value="3" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white focus:outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase">Nilai Huruf</label>
+              <select id="courseGradeInput" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white focus:outline-none">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+              </select>
+            </div>
+            <button 
+              type="button" 
+              onclick="addCourseToFormList()" 
+              class="sm:col-span-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 rounded-lg text-xs transition-colors cursor-pointer"
+            >
+              + Tambah Mata Kuliah ke List
+            </button>
+          </div>
+
+          <!-- Daftar Course List -->
+          <div class="max-h-[120px] overflow-y-auto border border-slate-100 rounded-lg">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-600 font-bold sticky top-0">
+                <tr>
+                  <th class="p-2">Mata Kuliah</th>
+                  <th class="p-2 text-center w-16">SKS</th>
+                  <th class="p-2 text-center w-16">Nilai</th>
+                  <th class="p-2 text-center w-16">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="courseTableBody" class="divide-y divide-slate-100 text-slate-700">
+                <!-- course row template -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <button 
+            type="button" 
+            onclick="closeModal()" 
+            class="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer"
+          >
+            Batal
+          </button>
+          <button 
+            type="submit" 
+            class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#1E56E3] hover:bg-[#1641A8] transition-all cursor-pointer shadow-md"
+          >
+            Simpan Data
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Detail Mahasiswa (show() & clear() visualizer) -->
+  <div id="detailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-100 transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[85vh]" id="detailCard">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-slate-100">
+        <h3 class="text-lg font-bold text-slate-800">Detail & Objek Mahasiswa</h3>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Detail Body -->
+      <div class="p-6 space-y-5 overflow-y-auto flex-grow text-sm">
+        
+        <!-- Header Info -->
+        <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div>
+            <h4 id="detailName" class="text-base font-bold text-slate-800">-</h4>
+            <p id="detailNim" class="text-xs text-slate-500 font-mono">-</p>
+          </div>
+          <span id="detailStatusBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+            -
+          </span>
+        </div>
+
+        <!-- Grade Summary -->
+        <div class="grid grid-cols-5 gap-2 text-center">
+          <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">Tugas</div>
+            <div id="detailTugas" class="font-bold text-slate-800">-</div>
+          </div>
+          <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">UTS</div>
+            <div id="detailUts" class="font-bold text-slate-800">-</div>
+          </div>
+          <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+            <div class="text-[10px] text-slate-400 font-semibold uppercase">UAS</div>
+            <div id="detailUas" class="font-bold text-slate-800">-</div>
+          </div>
+          <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
+            <div class="text-[10px] text-blue-400 font-semibold uppercase">Akhir</div>
+            <div id="detailAkhir" class="font-bold text-blue-700">-</div>
+          </div>
+          <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+            <div class="text-[10px] text-emerald-400 font-semibold uppercase">Grade</div>
+            <div id="detailGrade" class="font-bold text-emerald-700">-</div>
+          </div>
+        </div>
+
+        <!-- IPS & Matakuliah -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h5 class="font-bold text-slate-800">Daftar Mata Kuliah</h5>
+            <div class="text-xs text-slate-500">IPS: <strong id="detailIps" class="text-amber-600 font-mono text-sm">-</strong></div>
+          </div>
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-50 text-slate-600 font-semibold">
+                <tr>
+                  <th class="p-2.5">Mata Kuliah</th>
+                  <th class="p-2.5 text-center">SKS</th>
+                  <th class="p-2.5 text-center">Nilai</th>
+                </tr>
+              </thead>
+              <tbody id="detailCourseTableBody" class="divide-y divide-slate-100 text-slate-700">
+                <!-- courses load -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- show() JSON visualization -->
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Output dari mahasiwa.show()</label>
+          <pre id="detailShowJson" class="w-full p-4 bg-[#0A0F24] border border-slate-800 rounded-xl text-emerald-400 text-xs overflow-x-auto font-mono max-h-[160px]"></pre>
+        </div>
+
+        <!-- clear() method button -->
+        <div class="border-t border-slate-100 pt-4 flex items-center justify-between">
+          <span class="text-xs text-slate-500">Gunakan metode <code>clear()</code> untuk mereset objek ini.</span>
+          <button 
+            id="detailClearBtn"
+            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+          >
+            mahasiswa.clear()
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Javascript Core Logic -->
+  <script>
+    // ==========================================
+    // 1. DEFINISI KELAS (OBJECT & ARRAY OF OBJECTS)
+    // ==========================================
+
+    class Mahasiswa {
+      constructor(nim, nama, nilaiTugas, nilaiUts, nilaiUas, status, courses = []) {
+        this.nim = nim;
+        this.nama = nama;
+        this.nilaiTugas = Number(nilaiTugas) || 0;
+        this.nilaiUts = Number(nilaiUts) || 0;
+        this.nilaiUas = Number(nilaiUas) || 0;
+        this.status = status || 'Aktif'; // 'Aktif' | 'Tidak Aktif'
+        this.courses = courses; // Array of { matakuliah: string, sks: number, nilaiHuruf: 'A'|'B'|'C'|'D'|'E' }
+      }
+
+      // show() – Menampilkan semua data mahasiswa.
+      show() {
+        return {
+          nim: this.nim,
+          nama: this.nama,
+          nilaiTugas: this.nilaiTugas,
+          nilaiUts: this.nilaiUts,
+          nilaiUas: this.nilaiUas,
+          totalNilai: this.totalNilai(),
+          kategoriNilai: this.kategoriNilai(),
+          ips: this.IPS(),
+          status: this.status,
+          courses: this.courses
+        };
+      }
+
+      // add() – Menambah data baru ke mahasiswa ini
+      add(nim, nama, nilaiTugas, nilaiUts, nilaiUas, status, courses = []) {
+        this.nim = nim;
+        this.nama = nama;
+        this.nilaiTugas = Number(nilaiTugas);
+        this.nilaiUts = Number(nilaiUts);
+        this.nilaiUas = Number(nilaiUas);
+        this.status = status;
+        this.courses = courses;
+        return this;
+      }
+
+      // update() – Mengupdate informasi mahasiswa tertentu.
+      update(newData) {
+        if (newData.nama !== undefined) this.nama = newData.nama;
+        if (newData.nilaiTugas !== undefined) this.nilaiTugas = Number(newData.nilaiTugas);
+        if (newData.nilaiUts !== undefined) this.nilaiUts = Number(newData.nilaiUts);
+        if (newData.nilaiUas !== undefined) this.nilaiUas = Number(newData.nilaiUas);
+        if (newData.status !== undefined) this.status = newData.status;
+        if (newData.courses !== undefined) this.courses = newData.courses;
+        return this;
+      }
+
+      // deleteById() – Menghapus mahasiswa berdasarkan NIM dari array list
+      deleteById(nim, arrayList) {
+        if (arrayList) {
+          const index = arrayList.findIndex(m => m.nim === nim);
+          if (index !== -1) {
+            arrayList.splice(index, 1);
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // totalNilai() – Menghitung total nilai mahasiswa dari tugas (30%), UTS (30%), dan UAS (40%)
+      totalNilai() {
+        const total = (this.nilaiTugas * 0.3) + (this.nilaiUts * 0.3) + (this.nilaiUas * 0.4);
+        return parseFloat(total.toFixed(2));
+      }
+
+      // kategoriNilai() – Mengelompokkan nilai mahasiswa dalam kategori (A, B, C, D, E)
+      kategoriNilai() {
+        const total = this.totalNilai();
+        if (total >= 85) return 'A';
+        if (total >= 70) return 'B';
+        if (total >= 55) return 'C';
+        if (total >= 40) return 'D';
+        return 'E';
+      }
+
+      // IPS() – Menghitung Indeks Prestasi Semester (IPS)
+      IPS() {
+        if (!this.courses || this.courses.length === 0) return 0.00;
+        let totalSks = 0;
+        let totalBobotSks = 0;
+        const bobot = { 'A': 4, 'B': 3, 'C': 2, 'D': 1, 'E': 0 };
+        
+        this.courses.forEach(c => {
+          const grade = c.nilaiHuruf.toUpperCase();
+          const val = bobot[grade] !== undefined ? bobot[grade] : 0;
+          const sks = Number(c.sks) || 0;
+          totalSks += sks;
+          totalBobotSks += (val * sks);
+        });
+        
+        return totalSks === 0 ? 0.00 : parseFloat((totalBobotSks / totalSks).toFixed(2));
+      }
+
+      // clear() – Menghapus semua data mahasiswa.
+      clear() {
+        this.nim = '';
+        this.nama = '';
+        this.nilaiTugas = 0;
+        this.nilaiUts = 0;
+        this.nilaiUas = 0;
+        this.status = 'Tidak Aktif';
+        this.courses = [];
+      }
+    }
+
+    class DaftarMahasiswa {
+      constructor() {
+        this.list = [];
+      }
+
+      // jumlahMahasiswa() – Menghitung jumlah mahasiswa dalam array.
+      jumlahMahasiswa() {
+        return this.list.length;
+      }
+
+      // sortByNIM() – Mengurutkan mahasiswa berdasarkan NIM.
+      sortByNIM(ascending = true) {
+        this.list.sort((a, b) => {
+          return ascending ? a.nim.localeCompare(b.nim) : b.nim.localeCompare(a.nim);
+        });
+        return this.list;
+      }
+
+      // sortByStatus() – Mengurutkan mahasiswa berdasarkan status aktif/tidak (aktif didahulukan)
+      sortByStatus(activeFirst = true) {
+        this.list.sort((a, b) => {
+          if (a.status === b.status) return 0;
+          if (activeFirst) {
+            return a.status === 'Aktif' ? -1 : 1;
+          } else {
+            return a.status === 'Tidak Aktif' ? -1 : 1;
+          }
+        });
+        return this.list;
+      }
+
+      // jumlahAktifTidak() – Menghitung jumlah mahasiswa aktif dan tidak aktif.
+      jumlahAktifTidak() {
+        let aktif = 0;
+        let tidakAktif = 0;
+        this.list.forEach(m => {
+          if (m.status === 'Aktif') aktif++;
+          else tidakAktif++;
+        });
+        return { aktif, tidakAktif };
+      }
+
+      // clearArray() – Menghapus semua data mahasiswa dari array.
+      clearArray() {
+        this.list = [];
+      }
+    }
+
+    // ==========================================
+    // 2. STATE & INITIALIZATION
+    // ==========================================
+
+    const dm = new DaftarMahasiswa();
+    
+    // Inisialisasi data awal (Dummy)
+    const initialData = [
+      new Mahasiswa('20211003', 'Siti Aminah', 90, 85, 92, 'Aktif', [
+        { matakuliah: 'Struktur Data', sks: 3, nilaiHuruf: 'A' },
+        { matakuliah: 'Pemrograman Web', sks: 3, nilaiHuruf: 'A' }
+      ]),
+      new Mahasiswa('20211001', 'Rian Hidayat', 80, 75, 85, 'Aktif', [
+        { matakuliah: 'Struktur Data', sks: 3, nilaiHuruf: 'A' },
+        { matakuliah: 'Pemrograman Web', sks: 3, nilaiHuruf: 'B' }
+      ]),
+      new Mahasiswa('20211005', 'Dewi Lestari', 85, 78, 80, 'Aktif', [
+        { matakuliah: 'Struktur Data', sks: 3, nilaiHuruf: 'B' },
+        { matakuliah: 'Pemrograman Web', sks: 3, nilaiHuruf: 'A' }
+      ]),
+      new Mahasiswa('20211002', 'Ahmad Fauzi', 68, 70, 72, 'Tidak Aktif', [
+        { matakuliah: 'Struktur Data', sks: 3, nilaiHuruf: 'C' },
+        { matakuliah: 'Pemrograman Web', sks: 3, nilaiHuruf: 'B' }
+      ]),
+      new Mahasiswa('20211004', 'Budi Santoso', 50, 48, 60, 'Tidak Aktif', [
+        { matakuliah: 'Struktur Data', sks: 3, nilaiHuruf: 'D' },
+        { matakuliah: 'Pemrograman Web', sks: 3, nilaiHuruf: 'C' }
+      ])
+    ];
+
+    initialData.forEach(m => dm.list.push(m));
+
+    // Temp courses buffer for the add/edit form
+    let formCourses = [];
+
+    // ==========================================
+    // 3. EVENT HANDLERS & LOGIC
+    // ==========================================
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Log initialization
+      logConsole('Inisialisasi', `// Membuat instance DaftarMahasiswa baru\nconst dm = new DaftarMahasiswa();\n\n// Menambahkan 5 mahasiswa dummy ke array\ndm.list.push(m1, m2, m3, m4, m5);`);
+      renderDashboard();
+    });
+
+    function renderDashboard() {
+      // 1. Render Stats
+      document.getElementById('statTotal').textContent = dm.jumlahMahasiswa();
+      
+      const statsAktif = dm.jumlahAktifTidak();
+      document.getElementById('statAktif').textContent = statsAktif.aktif;
+      document.getElementById('statTidakAktif').textContent = statsAktif.tidakAktif;
+
+      // Hitung rata-rata IPS kelas
+      let totalIps = 0;
+      let countWithCourses = 0;
+      dm.list.forEach(m => {
+        if (m.nim) { // pastikan bukan object yang sudah di-clear
+          totalIps += m.IPS();
+          countWithCourses++;
+        }
+      });
+      const avgIps = countWithCourses === 0 ? 0.00 : (totalIps / countWithCourses).toFixed(2);
+      document.getElementById('statIpsRata').textContent = avgIps;
+
+      // 2. Render Tabel
+      const tbody = document.getElementById('studentTableBody');
+      tbody.innerHTML = '';
+
+      if (dm.list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-8 text-center text-slate-400">
+              Tidak ada data mahasiswa. Klik "+ Tambah Mahasiswa" untuk menambahkan.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      dm.list.forEach((student, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/80 transition-colors duration-150';
+        
+        // Status Badge Styling
+        const statusClass = student.status === 'Aktif' 
+          ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+          : 'bg-rose-50 text-rose-700 border-rose-200';
+
+        // Grade Badge Styling
+        let gradeColor = 'text-slate-600 bg-slate-100';
+        if (student.kategoriNilai() === 'A') gradeColor = 'text-emerald-700 bg-emerald-50 border border-emerald-100';
+        else if (student.kategoriNilai() === 'B') gradeColor = 'text-blue-700 bg-blue-50 border border-blue-100';
+        else if (student.kategoriNilai() === 'C') gradeColor = 'text-amber-700 bg-amber-50 border border-amber-100';
+        else if (student.kategoriNilai() === 'D') gradeColor = 'text-orange-700 bg-orange-50 border border-orange-100';
+        else gradeColor = 'text-red-700 bg-red-50 border border-red-100';
+
+        tr.innerHTML = `
+          <td class="py-4 px-4 font-mono font-medium text-slate-900">${student.nim || '<span class="text-rose-400">N/A</span>'}</td>
+          <td class="py-4 px-4 font-semibold text-slate-700">${student.nama || '<span class="text-rose-400">[Kosong]</span>'}</td>
+          <td class="py-4 px-4 text-center font-medium text-slate-500">${student.nilaiTugas}/${student.nilaiUts}/${student.nilaiUas}</td>
+          <td class="py-4 px-4 text-center font-bold text-slate-800">${student.totalNilai()}</td>
+          <td class="py-4 px-4 text-center">
+            <span class="px-2 py-0.5 rounded text-xs font-bold ${gradeColor}">
+              ${student.kategoriNilai()}
+            </span>
+          </td>
+          <td class="py-4 px-4 text-center font-bold text-amber-600 font-mono">${student.IPS().toFixed(2)}</td>
+          <td class="py-4 px-4 text-center">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusClass}">
+              ${student.status}
+            </span>
+          </td>
+          <td class="py-4 px-4">
+            <div class="flex items-center justify-end gap-1.5">
+              <button 
+                onclick="showStudentDetails(${index})" 
+                class="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1E56E3] font-bold text-xs transition-all cursor-pointer flex items-center gap-1"
+                title="Tampilkan Detail Objek (show())"
+              >
+                <span>Detail</span>
+              </button>
+              <button 
+                onclick="openEditModal(${index})" 
+                class="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold text-xs transition-all cursor-pointer flex items-center gap-1"
+                title="Update Informasi"
+              >
+                <span>Edit</span>
+              </button>
+              <button 
+                onclick="triggerDeleteStudent(${index})" 
+                class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition-all cursor-pointer flex items-center gap-1"
+                title="Delete Student (deleteById())"
+              >
+                <span>Hapus</span>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ==========================================
+    // 4. METODE ARRAY TRIGGER
+    // ==========================================
+
+    let nimSortAsc = true;
+    function triggerSortByNIM() {
+      dm.sortByNIM(nimSortAsc);
+      logConsole(`dm.sortByNIM(${nimSortAsc})`, dm.list.map(s => ({ nim: s.nim, nama: s.nama })));
+      nimSortAsc = !nimSortAsc;
+      renderDashboard();
+    }
+
+    let statusSortActive = true;
+    function triggerSortByStatus() {
+      dm.sortByStatus(statusSortActive);
+      logConsole(`dm.sortByStatus(${statusSortActive})`, dm.list.map(s => ({ nim: s.nim, nama: s.nama, status: s.status })));
+      statusSortActive = !statusSortActive;
+      renderDashboard();
+    }
+
+    function triggerJumlahAktifTidak() {
+      const hasil = dm.jumlahAktifTidak();
+      logConsole('dm.jumlahAktifTidak()', hasil);
+    }
+
+    function triggerClearArray() {
+      if (confirm('Apakah Anda yakin ingin menghapus seluruh data mahasiswa dari array?')) {
+        dm.clearArray();
+        logConsole('dm.clearArray()', `// Array list dikosongkan\ndm.list = [];`);
+        renderDashboard();
+      }
+    }
+
+    // ==========================================
+    // 5. MODAL CONTROL & FORM FUNCTIONS
+    // ==========================================
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+    }
+
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = 'Tambah Mahasiswa Baru';
+      document.getElementById('studentForm').reset();
+      document.getElementById('editIndex').value = '-1';
+      document.getElementById('nim').disabled = false;
+      
+      formCourses = [];
+      renderFormCoursesTable();
+
+      const modal = document.getElementById('studentModal');
+      const card = document.getElementById('modalCard');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95', 'opacity-0');
+      }, 50);
+    }
+
+    function openEditModal(index) {
+      const student = dm.list[index];
+      document.getElementById('modalTitle').textContent = 'Update Informasi Mahasiswa';
+      document.getElementById('editIndex').value = index;
+      
+      document.getElementById('nim').value = student.nim;
+      document.getElementById('nim').disabled = true; // NIM primary key
+      document.getElementById('nama').value = student.nama;
+      document.getElementById('nilaiTugas').value = student.nilaiTugas;
+      document.getElementById('nilaiUts').value = student.nilaiUts;
+      document.getElementById('nilaiUas').value = student.nilaiUas;
+      document.getElementById('status').value = student.status;
+
+      // Copy courses to local buffer
+      formCourses = JSON.parse(JSON.stringify(student.courses || []));
+      renderFormCoursesTable();
+
+      const modal = document.getElementById('studentModal');
+      const card = document.getElementById('modalCard');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95', 'opacity-0');
+      }, 50);
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('studentModal');
+      const card = document.getElementById('modalCard');
+      modal.classList.add('opacity-0');
+      card.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    // Manage courses inside student Modal
+    function addCourseToFormList() {
+      const courseName = document.getElementById('courseNameInput').value.trim();
+      const courseSks = parseInt(document.getElementById('courseSksInput').value);
+      const courseGrade = document.getElementById('courseGradeInput').value;
+
+      if (!courseName) {
+        alert('Masukkan Nama Mata Kuliah!');
+        return;
+      }
+
+      formCourses.push({
+        matakuliah: courseName,
+        sks: courseSks,
+        nilaiHuruf: courseGrade
+      });
+
+      // Clear inputs
+      document.getElementById('courseNameInput').value = '';
+      document.getElementById('courseSksInput').value = '3';
+      document.getElementById('courseGradeInput').value = 'A';
+
+      renderFormCoursesTable();
+    }
+
+    function removeCourseFromFormList(index) {
+      formCourses.splice(index, 1);
+      renderFormCoursesTable();
+    }
+
+    function renderFormCoursesTable() {
+      const tbody = document.getElementById('courseTableBody');
+      tbody.innerHTML = '';
+      
+      if (formCourses.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="p-4 text-center text-slate-400 text-xs">
+              Belum ada mata kuliah yang ditambahkan.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      formCourses.forEach((c, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-2 font-medium">${c.matakuliah}</td>
+          <td class="p-2 text-center">${c.sks} SKS</td>
+          <td class="p-2 text-center font-bold text-[#1E56E3]">${c.nilaiHuruf}</td>
+          <td class="p-2 text-center">
+            <button 
+              type="button" 
+              onclick="removeCourseFromFormList(${idx})" 
+              class="text-rose-600 hover:text-rose-800 font-bold transition-colors cursor-pointer"
+            >
+              Hapus
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const nim = document.getElementById('nim').value.trim();
+      const nama = document.getElementById('nama').value.trim();
+      const nilaiTugas = Number(document.getElementById('nilaiTugas').value);
+      const nilaiUts = Number(document.getElementById('nilaiUts').value);
+      const nilaiUas = Number(document.getElementById('nilaiUas').value);
+      const status = document.getElementById('status').value;
+      const editIndex = parseInt(document.getElementById('editIndex').value);
+
+      if (!nim || !nama) return;
+
+      if (editIndex === -1) {
+        // ADD NEW STUDENT
+        // Check duplicate
+        if (dm.list.some(s => s.nim === nim)) {
+          alert('NIM sudah terdaftar!');
+          return;
+        }
+
+        const newStudent = new Mahasiswa(nim, nama, nilaiTugas, nilaiUts, nilaiUas, status, formCourses);
+        dm.list.push(newStudent);
+
+        logConsole('dm.list.push(new Mahasiswa())', `// Menambahkan mahasiswa baru\nconst newStudent = new Mahasiswa("${nim}", "${nama}", ${nilaiTugas}, ${nilaiUts}, ${nilaiUas}, "${status}");\nnewStudent.courses = ${JSON.stringify(formCourses)};\ndm.list.push(newStudent);\n\n// Output show():\n${JSON.stringify(newStudent.show(), null, 2)}`);
+      } else {
+        // UPDATE STUDENT
+        const student = dm.list[editIndex];
+        student.update({
+          nama: nama,
+          nilaiTugas: nilaiTugas,
+          nilaiUts: nilaiUts,
+          nilaiUas: nilaiUas,
+          status: status,
+          courses: formCourses
+        });
+
+        logConsole(`dm.list[${editIndex}].update()`, `// Memperbarui mahasiswa NIM ${student.nim}\ndm.list[${editIndex}].update({\n  nama: "${nama}",\n  nilaiTugas: ${nilaiTugas},\n  nilaiUts: ${nilaiUts},\n  nilaiUas: ${nilaiUas},\n  status: "${status}",\n  courses: [...] \n});\n\n// Output show():\n${JSON.stringify(student.show(), null, 2)}`);
+      }
+
+      renderDashboard();
+      closeModal();
+    }
+
+    function triggerDeleteStudent(index) {
+      const student = dm.list[index];
+      if (confirm(`Apakah Anda yakin ingin menghapus mahasiswa ${student.nama || 'ini'} (${student.nim || 'NIM Kosong'})?`)) {
+        const nim = student.nim;
+        
+        // Memanggil deleteById() dari kelas Mahasiswa untuk mendemonstrasikan metode tersebut
+        // deleteById(nim, arrayList)
+        const dummyStudent = new Mahasiswa();
+        const success = dummyStudent.deleteById(nim, dm.list);
+        
+        if (success) {
+          logConsole(`mahasiswa.deleteById("${nim}", dm.list)`, `// Sukses menghapus mahasiswa dengan NIM ${nim} dari array list`);
+        } else {
+          // Fallback if NIM is empty or clear() was called before, we remove by index directly
+          dm.list.splice(index, 1);
+          logConsole('dm.list.splice()', `// Sukses menghapus data pada indeks ${index}`);
+        }
+        
+        renderDashboard();
+      }
+    }
+
+    // ==========================================
+    // 6. DETAIL MODAL (SHOW & CLEAR VISUALIZER)
+    // ==========================================
+
+    let activeDetailIndex = -1;
+
+    function showStudentDetails(index) {
+      activeDetailIndex = index;
+      const student = dm.list[index];
+      
+      const showData = student.show();
+      logConsole(`dm.list[${index}].show()`, showData);
+
+      // Populate Detail UI
+      document.getElementById('detailName').textContent = student.nama || '[Tanpa Nama]';
+      document.getElementById('detailNim').textContent = student.nim || '[Tanpa NIM]';
+      document.getElementById('detailStatusBadge').textContent = student.status;
+      
+      // status class
+      const badge = document.getElementById('detailStatusBadge');
+      badge.className = 'px-3 py-1 rounded-full text-xs font-bold border ';
+      if (student.status === 'Aktif') {
+        badge.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+      } else {
+        badge.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-200');
+      }
+
+      document.getElementById('detailTugas').textContent = student.nilaiTugas;
+      document.getElementById('detailUts').textContent = student.nilaiUts;
+      document.getElementById('detailUas').textContent = student.nilaiUas;
+      document.getElementById('detailAkhir').textContent = student.totalNilai();
+      document.getElementById('detailGrade').textContent = student.kategoriNilai();
+      document.getElementById('detailIps').textContent = student.IPS().toFixed(2);
+
+      // detail courses table
+      const cBody = document.getElementById('detailCourseTableBody');
+      cBody.innerHTML = '';
+      if (!student.courses || student.courses.length === 0) {
+        cBody.innerHTML = `
+          <tr>
+            <td colspan="3" class="p-3 text-center text-slate-400">Tidak ada mata kuliah</td>
+          </tr>
+        `;
+      } else {
+        student.courses.forEach(c => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="p-2.5 font-medium">${c.matakuliah}</td>
+            <td class="p-2.5 text-center">${c.sks} SKS</td>
+            <td class="p-2.5 text-center font-bold text-amber-600">${c.nilaiHuruf}</td>
+          `;
+          cBody.appendChild(tr);
+        });
+      }
+
+      // show() JSON output
+      document.getElementById('detailShowJson').textContent = JSON.stringify(showData, null, 2);
+
+      // Set up click handler for clear() method
+      const clearBtn = document.getElementById('detailClearBtn');
+      clearBtn.onclick = () => {
+        student.clear();
+        logConsole(`dm.list[${index}].clear()`, `// Objek mahasiswa di-reset ke nilai default\n// Atribut nim, nama, nilai, dan mata kuliah telah dikosongkan.`);
+        
+        // Re-show details
+        showStudentDetails(index);
+        renderDashboard();
+      };
+
+      // Open Modal
+      const modal = document.getElementById('detailModal');
+      const card = document.getElementById('detailCard');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95', 'opacity-0');
+      }, 50);
+    }
+
+    function closeDetailModal() {
+      const modal = document.getElementById('detailModal');
+      const card = document.getElementById('detailCard');
+      modal.classList.add('opacity-0');
+      card.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    // ==========================================
+    // 7. CONSOLE LOG SIMULATOR
+    // ==========================================
+
+    function logConsole(command, output) {
+      const consoleLog = document.getElementById('consoleLog');
+      const timestamp = new Date().toLocaleTimeString();
+      
+      let outputStr = '';
+      if (typeof output === 'object') {
+        outputStr = JSON.stringify(output, null, 2);
+      } else {
+        outputStr = String(output);
+      }
+
+      const logEntry = document.createElement('div');
+      logEntry.className = 'border-b border-slate-800/60 pb-3 mb-2 font-mono';
+      logEntry.innerHTML = `
+        <div class="flex items-center justify-between text-slate-400 mb-1 text-[11px]">
+          <span class="text-blue-400 font-medium font-bold">&gt; ${command}</span>
+          <span class="text-slate-500">${timestamp}</span>
+        </div>
+        <pre class="text-emerald-400 overflow-x-auto whitespace-pre-wrap pl-3 border-l border-emerald-500/20 leading-relaxed">${outputStr}</pre>
+      `;
+
+      consoleLog.prepend(logEntry);
+    }
+
+    function clearConsole() {
+      document.getElementById('consoleLog').innerHTML = `
+        <div class="text-slate-500 italic text-center py-4">Console log dikosongkan.</div>
+      `;
+    }
+  </script>
+</body>
+</html>
