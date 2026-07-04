@@ -1,0 +1,14 @@
+.atom-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.375rem;
+  text-align: left;
+  transition: color var(--transition-fast);
+}
+
+.label-required {
+  color: var(--danger);
+  margin-left: 0.25rem;
+}

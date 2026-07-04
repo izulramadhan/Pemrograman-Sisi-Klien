@@ -1,0 +1,14 @@
+.molecule-form-field {
+  width: 100%;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.field-error-msg {
+  color: var(--danger);
+  font-size: 0.775rem;
+  margin-top: 0.35rem;
+  text-align: left;
+  animation: fadeIn var(--transition-fast) forwards;
+}
