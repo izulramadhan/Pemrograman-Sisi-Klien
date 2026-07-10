@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Plus, Search, Check, Loader2 } from 'lucide-react';
 import Button from '../components/atoms/Button';
 import DosenTable from './DosenTable';
 import DosenModal from './DosenModal';
-import api from '../services/api';
+import { 
+  useGetDosen, 
+  useAddDosen, 
+  useUpdateDosen, 
+  useDeleteDosen 
+} from '../utils/hooks/useDosenQuery';
 import './MahasiswaPage.css'; // Reuse table list components styling
 import './Dosen.css';
 
@@ -13,35 +18,21 @@ const Dosen = () => {
   const canWrite = user?.permissions?.includes('write');
   const canDelete = user?.permissions?.includes('delete');
 
-  const [dosen, setDosen] = useState([]);
+  // React Query hooks
+  const { data: dosen = [], isLoading } = useGetDosen();
+  const addDosenMutation = useAddDosen();
+  const updateDosenMutation = useUpdateDosen();
+  const deleteDosenMutation = useDeleteDosen();
+
   const [selectedDosen, setSelectedDosen] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState('');
-
-  // Fetch Dosen List via Axios
-  const fetchDosen = async () => {
-    setLoading(true);
-    try {
-      const response = await api.get('/api/dosen');
-      setDosen(response.data);
-    } catch (err) {
-      showToast('Gagal memuat data dosen.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDosen();
-  }, []);
 
   // storeDosen (POST)
   const storeDosen = async (newDosen) => {
     try {
-      const response = await api.post('/api/dosen', newDosen);
-      setDosen(prev => [response.data, ...prev]);
+      await addDosenMutation.mutateAsync(newDosen);
       showToast(`Dosen ${newDosen.nama} berhasil ditambahkan!`);
     } catch (err) {
       showToast(err.response?.data?.message || 'Gagal menambahkan dosen.');
@@ -51,8 +42,7 @@ const Dosen = () => {
   // updateDosen (PUT)
   const updateDosen = async (nidn, updatedDosen) => {
     try {
-      const response = await api.put(`/api/dosen/${nidn}`, updatedDosen);
-      setDosen(prev => prev.map(d => d.nidn === nidn ? response.data : d));
+      await updateDosenMutation.mutateAsync(updatedDosen);
       showToast(`Data dosen ${updatedDosen.nama} berhasil diperbarui!`);
     } catch (err) {
       showToast(err.response?.data?.message || 'Gagal memperbarui dosen.');
@@ -62,8 +52,7 @@ const Dosen = () => {
   // deleteDosen (DELETE)
   const deleteDosen = async (nidn) => {
     try {
-      await api.delete(`/api/dosen/${nidn}`);
-      setDosen(prev => prev.filter(d => d.nidn !== nidn));
+      await deleteDosenMutation.mutateAsync(nidn);
     } catch (err) {
       showToast('Gagal menghapus dosen.');
     }
@@ -149,7 +138,7 @@ const Dosen = () => {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="loading-spinner-wrapper" style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
           <Loader2 className="spinner-icon animate-spin" size={32} style={{ color: 'var(--primary)', animation: 'btn-spin 1s linear infinite' }} />
         </div>

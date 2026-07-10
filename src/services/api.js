@@ -1,4 +1,5 @@
 import axios from 'axios';
+import initialStudents from '../data/students.json';
 
 // --- MOCK DATABASE SEEDING ---
 const seedDatabase = () => {
@@ -35,7 +36,12 @@ const seedDatabase = () => {
     ]));
   }
 
-  // 2. Preseed Dosen
+  // 2. Preseed Students (Mahasiswa)
+  if (!localStorage.getItem('pemsik_students')) {
+    localStorage.setItem('pemsik_students', JSON.stringify(initialStudents));
+  }
+
+  // 3. Preseed Dosen
   if (!localStorage.getItem('pemsik_dosen')) {
     localStorage.setItem('pemsik_dosen', JSON.stringify([
       {
@@ -62,7 +68,7 @@ const seedDatabase = () => {
     ]));
   }
 
-  // 3. Preseed Mata Kuliah
+  // 4. Preseed Mata Kuliah
   if (!localStorage.getItem('pemsik_matakuliah')) {
     localStorage.setItem('pemsik_matakuliah', JSON.stringify([
       {
@@ -88,6 +94,33 @@ const seedDatabase = () => {
       }
     ]));
   }
+
+  // 5. Preseed Kelas (Classes)
+  if (!localStorage.getItem('pemsik_kelas')) {
+    localStorage.setItem('pemsik_kelas', JSON.stringify([
+      {
+        kode: 'K-101',
+        nama: 'IF-4A',
+        dosenWali: 'Dr. Ir. Azizul Izul, M.T.',
+        jumlahMahasiswa: 28,
+        status: true
+      },
+      {
+        kode: 'K-102',
+        nama: 'SI-2B',
+        dosenWali: 'Budi Santoso, M.Kom.',
+        jumlahMahasiswa: 24,
+        status: true
+      },
+      {
+        kode: 'K-103',
+        nama: 'TK-6C',
+        dosenWali: 'Siti Aminah, M.T.',
+        jumlahMahasiswa: 18,
+        status: false
+      }
+    ]));
+  }
 };
 
 // Execute seeding
@@ -95,8 +128,8 @@ seedDatabase();
 
 // --- AXIOS CUSTOM MOCK ADAPTER ---
 const mockAdapter = async (config) => {
-  // Simulate network latency (150ms - 300ms)
-  await new Promise((resolve) => setTimeout(resolve, 150 + Math.random() * 150));
+  // Simulate network latency (100ms - 200ms)
+  await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 100));
 
   const { url, method, data } = config;
   const parsedData = data ? JSON.parse(data) : null;
@@ -106,7 +139,6 @@ const mockAdapter = async (config) => {
     const users = JSON.parse(localStorage.getItem('pemsik_users') || '[]');
     const { name, username, email, password, role } = parsedData;
 
-    // Validation checks
     if (!name || !username || !email || !password) {
       return {
         status: 400,
@@ -139,7 +171,6 @@ const mockAdapter = async (config) => {
       };
     }
 
-    // Map default permissions based on chosen role
     let permissions = ['read'];
     if (role === 'Super Admin') {
       permissions = ['read', 'write', 'delete'];
@@ -232,7 +263,92 @@ const mockAdapter = async (config) => {
     }
   }
 
-  // 5. GET DOSEN (GET /api/dosen)
+  // 5. GET MAHASISWA (GET /api/mahasiswa)
+  if (url === '/api/mahasiswa' && method === 'get') {
+    const mhs = JSON.parse(localStorage.getItem('pemsik_students') || '[]');
+    return {
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      data: mhs
+    };
+  }
+
+  // 6. ADD MAHASISWA (POST /api/mahasiswa)
+  if (url === '/api/mahasiswa' && method === 'post') {
+    const mhs = JSON.parse(localStorage.getItem('pemsik_students') || '[]');
+    const newMhs = parsedData;
+
+    const nimExists = mhs.some(s => s.nim.toString().trim() === newMhs.nim.toString().trim());
+    if (nimExists) {
+      return {
+        status: 400,
+        statusText: 'Bad Request',
+        headers: {},
+        config,
+        data: { message: 'NIM sudah terdaftar!' }
+      };
+    }
+
+    mhs.unshift(newMhs);
+    localStorage.setItem('pemsik_students', JSON.stringify(mhs));
+
+    return {
+      status: 201,
+      statusText: 'Created',
+      headers: {},
+      config,
+      data: newMhs
+    };
+  }
+
+  // 7. UPDATE MAHASISWA (PUT /api/mahasiswa/:nim)
+  if (url.startsWith('/api/mahasiswa/') && method === 'put') {
+    const nim = url.split('/').pop().trim();
+    const mhs = JSON.parse(localStorage.getItem('pemsik_students') || '[]');
+    const updatedMhs = parsedData;
+
+    const index = mhs.findIndex(s => s.nim.toString().trim() === nim);
+    if (index !== -1) {
+      mhs[index] = { ...mhs[index], ...updatedMhs };
+      localStorage.setItem('pemsik_students', JSON.stringify(mhs));
+      return {
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+        data: mhs[index]
+      };
+    } else {
+      return {
+        status: 404,
+        statusText: 'Not Found',
+        headers: {},
+        config,
+        data: { message: 'Mahasiswa tidak ditemukan!' }
+      };
+    }
+  }
+
+  // 8. DELETE MAHASISWA (DELETE /api/mahasiswa/:nim)
+  if (url.startsWith('/api/mahasiswa/') && method === 'delete') {
+    const nim = url.split('/').pop().trim();
+    const mhs = JSON.parse(localStorage.getItem('pemsik_students') || '[]');
+
+    const filtered = mhs.filter(s => s.nim.toString().trim() !== nim);
+    localStorage.setItem('pemsik_students', JSON.stringify(filtered));
+
+    return {
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      data: { success: true }
+    };
+  }
+
+  // 9. GET DOSEN (GET /api/dosen)
   if (url === '/api/dosen' && method === 'get') {
     const dosen = JSON.parse(localStorage.getItem('pemsik_dosen') || '[]');
     return {
@@ -244,7 +360,7 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // 6. ADD DOSEN (POST /api/dosen)
+  // 10. ADD DOSEN (POST /api/dosen)
   if (url === '/api/dosen' && method === 'post') {
     const dosen = JSON.parse(localStorage.getItem('pemsik_dosen') || '[]');
     const newDosen = parsedData;
@@ -272,7 +388,7 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // 7. UPDATE DOSEN (PUT /api/dosen/:nidn)
+  // 11. UPDATE DOSEN (PUT /api/dosen/:nidn)
   if (url.startsWith('/api/dosen/') && method === 'put') {
     const nidn = url.split('/').pop();
     const dosen = JSON.parse(localStorage.getItem('pemsik_dosen') || '[]');
@@ -300,7 +416,7 @@ const mockAdapter = async (config) => {
     }
   }
 
-  // 8. DELETE DOSEN (DELETE /api/dosen/:nidn)
+  // 12. DELETE DOSEN (DELETE /api/dosen/:nidn)
   if (url.startsWith('/api/dosen/') && method === 'delete') {
     const nidn = url.split('/').pop();
     const dosen = JSON.parse(localStorage.getItem('pemsik_dosen') || '[]');
@@ -317,7 +433,7 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // 9. GET MATA KULIAH (GET /api/matakuliah)
+  // 13. GET MATA KULIAH (GET /api/matakuliah)
   if (url === '/api/matakuliah' && method === 'get') {
     const matakuliah = JSON.parse(localStorage.getItem('pemsik_matakuliah') || '[]');
     return {
@@ -329,7 +445,7 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // 10. ADD MATA KULIAH (POST /api/matakuliah)
+  // 14. ADD MATA KULIAH (POST /api/matakuliah)
   if (url === '/api/matakuliah' && method === 'post') {
     const matakuliah = JSON.parse(localStorage.getItem('pemsik_matakuliah') || '[]');
     const newMK = parsedData;
@@ -357,7 +473,7 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // 11. UPDATE MATA KULIAH (PUT /api/matakuliah/:kode)
+  // 15. UPDATE MATA KULIAH (PUT /api/matakuliah/:kode)
   if (url.startsWith('/api/matakuliah/') && method === 'put') {
     const kode = url.split('/').pop();
     const matakuliah = JSON.parse(localStorage.getItem('pemsik_matakuliah') || '[]');
@@ -385,7 +501,7 @@ const mockAdapter = async (config) => {
     }
   }
 
-  // 12. DELETE MATA KULIAH (DELETE /api/matakuliah/:kode)
+  // 16. DELETE MATA KULIAH (DELETE /api/matakuliah/:kode)
   if (url.startsWith('/api/matakuliah/') && method === 'delete') {
     const kode = url.split('/').pop();
     const matakuliah = JSON.parse(localStorage.getItem('pemsik_matakuliah') || '[]');
@@ -402,7 +518,91 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // Fallback error for unknown endpoints
+  // 17. GET KELAS (GET /api/kelas)
+  if (url === '/api/kelas' && method === 'get') {
+    const kelas = JSON.parse(localStorage.getItem('pemsik_kelas') || '[]');
+    return {
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      data: kelas
+    };
+  }
+
+  // 18. ADD KELAS (POST /api/kelas)
+  if (url === '/api/kelas' && method === 'post') {
+    const kelas = JSON.parse(localStorage.getItem('pemsik_kelas') || '[]');
+    const newKelas = parsedData;
+
+    const codeExists = kelas.some(k => k.kode.toLowerCase() === newKelas.kode.toLowerCase());
+    if (codeExists) {
+      return {
+        status: 400,
+        statusText: 'Bad Request',
+        headers: {},
+        config,
+        data: { message: 'Kode Kelas sudah terdaftar!' }
+      };
+    }
+
+    kelas.unshift(newKelas);
+    localStorage.setItem('pemsik_kelas', JSON.stringify(kelas));
+
+    return {
+      status: 201,
+      statusText: 'Created',
+      headers: {},
+      config,
+      data: newKelas
+    };
+  }
+
+  // 19. UPDATE KELAS (PUT /api/kelas/:kode)
+  if (url.startsWith('/api/kelas/') && method === 'put') {
+    const kode = url.split('/').pop();
+    const kelas = JSON.parse(localStorage.getItem('pemsik_kelas') || '[]');
+    const updatedKelas = parsedData;
+
+    const index = kelas.findIndex(k => k.kode.toLowerCase() === kode.toLowerCase());
+    if (index !== -1) {
+      kelas[index] = { ...kelas[index], ...updatedKelas };
+      localStorage.setItem('pemsik_kelas', JSON.stringify(kelas));
+      return {
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+        data: kelas[index]
+      };
+    } else {
+      return {
+        status: 404,
+        statusText: 'Not Found',
+        headers: {},
+        config,
+        data: { message: 'Kelas tidak ditemukan!' }
+      };
+    }
+  }
+
+  // 20. DELETE KELAS (DELETE /api/kelas/:kode)
+  if (url.startsWith('/api/kelas/') && method === 'delete') {
+    const kode = url.split('/').pop();
+    const kelas = JSON.parse(localStorage.getItem('pemsik_kelas') || '[]');
+
+    const filtered = kelas.filter(k => k.kode.toLowerCase() !== kode.toLowerCase());
+    localStorage.setItem('pemsik_kelas', JSON.stringify(filtered));
+
+    return {
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      data: { success: true }
+    };
+  }
+
   throw new Error(`Endpoint mock [${method.toUpperCase()}] ${url} tidak terdaftar!`);
 };
 

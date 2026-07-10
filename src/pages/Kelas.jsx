@@ -2,92 +2,92 @@ import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Plus, Search, Check, Loader2 } from 'lucide-react';
 import Button from '../components/atoms/Button';
-import MataKuliahTable from './MataKuliahTable';
-import MataKuliahModal from './MataKuliahModal';
+import KelasTable from './KelasTable';
+import KelasModal from './KelasModal';
 import { 
-  useGetMataKuliah, 
-  useAddMataKuliah, 
-  useUpdateMataKuliah, 
-  useDeleteMataKuliah 
-} from '../utils/hooks/useMataKuliahQuery';
-import './MahasiswaPage.css'; // Reuse table list components styling
-import './MataKuliah.css';
+  useGetKelas, 
+  useAddKelas, 
+  useUpdateKelas, 
+  useDeleteKelas 
+} from '../utils/hooks/useKelasQuery';
+import './MahasiswaPage.css'; // Reuse common layout styles
+import './Kelas.css';
 
-const MataKuliah = () => {
+const Kelas = () => {
   const { user } = useOutletContext();
   const canWrite = user?.permissions?.includes('write');
   const canDelete = user?.permissions?.includes('delete');
 
   // React Query hooks
-  const { data: matakuliah = [], isLoading } = useGetMataKuliah();
-  const addMKMutation = useAddMataKuliah();
-  const updateMKMutation = useUpdateMataKuliah();
-  const deleteMKMutation = useDeleteMataKuliah();
+  const { data: kelas = [], isLoading } = useGetKelas();
+  const addKelasMutation = useAddKelas();
+  const updateKelasMutation = useUpdateKelas();
+  const deleteKelasMutation = useDeleteKelas();
 
-  const [selectedMK, setSelectedMK] = useState(null);
+  const [selectedKelas, setSelectedKelas] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState('');
 
-  // storeMataKuliah (POST)
-  const storeMataKuliah = async (newMK) => {
+  // storeKelas (POST)
+  const storeKelas = async (newKelas) => {
     try {
-      await addMKMutation.mutateAsync(newMK);
-      showToast(`Mata Kuliah ${newMK.nama} berhasil ditambahkan!`);
+      await addKelasMutation.mutateAsync(newKelas);
+      showToast(`Kelas ${newKelas.nama} berhasil ditambahkan!`);
     } catch (err) {
-      showToast(err.response?.data?.message || 'Gagal menambahkan mata kuliah.');
+      showToast(err.response?.data?.message || 'Gagal menambahkan kelas.');
     }
   };
 
-  // updateMataKuliah (PUT)
-  const updateMataKuliah = async (kode, updatedMK) => {
+  // updateKelas (PUT)
+  const updateKelas = async (kode, updatedKelas) => {
     try {
-      await updateMKMutation.mutateAsync(updatedMK);
-      showToast(`Data mata kuliah ${updatedMK.nama} berhasil diperbarui!`);
+      await updateKelasMutation.mutateAsync(updatedKelas);
+      showToast(`Data kelas ${updatedKelas.nama} berhasil diperbarui!`);
     } catch (err) {
-      showToast(err.response?.data?.message || 'Gagal memperbarui mata kuliah.');
+      showToast(err.response?.data?.message || 'Gagal memperbarui kelas.');
     }
   };
 
-  // deleteMataKuliah (DELETE)
-  const deleteMataKuliah = async (kode) => {
+  // deleteKelas (DELETE)
+  const deleteKelas = async (kode) => {
     try {
-      await deleteMKMutation.mutateAsync(kode);
+      await deleteKelasMutation.mutateAsync(kode);
     } catch (err) {
-      showToast('Gagal menghapus mata kuliah.');
+      showToast('Gagal menghapus kelas.');
     }
   };
 
   const openAddModal = () => {
-    setSelectedMK(null);
+    setSelectedKelas(null);
     setModalOpen(true);
   };
 
   const openEditModal = (kode) => {
-    const matched = matakuliah.find(m => m.kode === kode);
-    setSelectedMK(matched);
+    const matched = kelas.find(k => k.kode === kode);
+    setSelectedKelas(matched);
     setModalOpen(true);
   };
 
   const handleSubmit = (formState) => {
-    if (selectedMK) {
-      const confirmUpdate = window.confirm(`Apakah Anda yakin ingin memperbarui data mata kuliah: ${formState.nama}?`);
+    if (selectedKelas) {
+      const confirmUpdate = window.confirm(`Apakah Anda yakin ingin memperbarui data kelas: ${formState.nama}?`);
       if (!confirmUpdate) return;
-      updateMataKuliah(selectedMK.kode, formState);
+      updateKelas(selectedKelas.kode, formState);
     } else {
-      storeMataKuliah(formState);
+      storeKelas(formState);
     }
   };
 
   const handleDelete = (kode) => {
-    const target = matakuliah.find(m => m.kode === kode);
+    const target = kelas.find(k => k.kode === kode);
     const targetName = target ? target.nama : kode;
 
-    const confirmDelete = window.confirm(`Apakah Anda yakin ingin menghapus data mata kuliah: ${targetName}?`);
+    const confirmDelete = window.confirm(`Apakah Anda yakin ingin menghapus data kelas: ${targetName}?`);
     if (!confirmDelete) return;
 
-    deleteMataKuliah(kode);
-    showToast(`Data mata kuliah ${targetName} berhasil dihapus.`);
+    deleteKelas(kode);
+    showToast(`Data kelas ${targetName} berhasil dihapus.`);
   };
 
   const showToast = (msg) => {
@@ -95,11 +95,11 @@ const MataKuliah = () => {
     setTimeout(() => setToastMessage(''), 3000);
   };
 
-  const filteredMK = matakuliah.filter(
-    m =>
-      m.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.kode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.sifat.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredKelas = kelas.filter(
+    k =>
+      k.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      k.kode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      k.dosenWali.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -113,13 +113,13 @@ const MataKuliah = () => {
 
       <div className="admin-page-header">
         <div>
-          <h2 className="admin-page-title">Kelola Mata Kuliah</h2>
-          <p className="admin-page-subtitle">Daftar silabus mata kuliah, bobot SKS, semester dan sifat Wajib/Pilihan</p>
+          <h2 className="admin-page-title">Kelola Kelas</h2>
+          <p className="admin-page-subtitle">Daftar kelas akademik perkuliahan, nama kelas, dosen wali, dan jumlah mahasiswa</p>
         </div>
         {canWrite && (
           <Button onClick={openAddModal} className="add-user-top-btn">
             <Plus size={18} style={{ marginRight: '0.5rem' }} />
-            Tambah Mata Kuliah
+            Tambah Kelas
           </Button>
         )}
       </div>
@@ -129,7 +129,7 @@ const MataKuliah = () => {
           <Search size={16} className="search-bar-icon" />
           <input
             type="text"
-            placeholder="Cari berdasarkan Kode, Nama, atau Sifat Mata Kuliah..."
+            placeholder="Cari berdasarkan Kode, Nama, atau Dosen Wali..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="table-search-input"
@@ -143,8 +143,8 @@ const MataKuliah = () => {
           <Loader2 className="spinner-icon animate-spin" size={32} style={{ color: 'var(--primary)', animation: 'btn-spin 1s linear infinite' }} />
         </div>
       ) : (
-        <MataKuliahTable
-          matakuliah={filteredMK}
+        <KelasTable
+          kelas={filteredKelas}
           openEditModal={openEditModal}
           onDelete={handleDelete}
           canWrite={canWrite}
@@ -152,18 +152,18 @@ const MataKuliah = () => {
         />
       )}
 
-      <MataKuliahModal
+      <KelasModal
         isModalOpen={isModalOpen}
         onClose={() => {
           setModalOpen(false);
-          setSelectedMK(null);
+          setSelectedKelas(null);
         }}
         onSubmit={handleSubmit}
-        selectedMK={selectedMK}
-        mkList={matakuliah}
+        selectedKelas={selectedKelas}
+        kelasList={kelas}
       />
     </div>
   );
 };
 
-export default MataKuliah;
+export default Kelas;

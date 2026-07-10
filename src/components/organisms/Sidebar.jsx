@@ -5,6 +5,7 @@ import {
   GraduationCap,
   UserCheck,
   BookOpen,
+  Presentation,
   Users,
   Settings, 
   Shield, 
@@ -62,6 +63,14 @@ const Sidebar = ({ isOpen, onToggle, onLogout, user }) => {
         >
           <BookOpen size={20} />
           {isOpen && <span className="nav-text">Mata Kuliah</span>}
+        </NavLink>
+
+        <NavLink 
+          to="/admin/kelas" 
+          className={({ isActive }) => `nav-item ${isActive ? 'nav-item-active' : ''}`}
+        >
+          <Presentation size={20} />
+          {isOpen && <span className="nav-text">Kelas</span>}
         </NavLink>
 
         {isSuperAdmin && (

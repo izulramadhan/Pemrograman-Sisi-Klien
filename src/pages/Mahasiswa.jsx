@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Plus, Search, Check } from 'lucide-react';
+import { Plus, Search, Check, Loader2 } from 'lucide-react';
 import Button from '../components/atoms/Button';
 import MahasiswaModal from './MahasiswaModal';
 import MahasiswaTable from './MahasiswaTable';
-import initialStudents from '../data/students.json';
+import { 
+  useGetMahasiswa, 
+  useAddMahasiswa, 
+  useUpdateMahasiswa, 
+  useDeleteMahasiswa 
+} from '../utils/hooks/useMahasiswaQuery';
 import './MahasiswaPage.css'; // Reuse styles
 
 const Mahasiswa = () => {
@@ -12,11 +17,11 @@ const Mahasiswa = () => {
   const canWrite = user?.permissions?.includes('write');
   const canDelete = user?.permissions?.includes('delete');
 
-  // state mahasiswa
-  const [mahasiswa, setMahasiswa] = useState(() => {
-    const saved = localStorage.getItem('pemsik_students');
-    return saved ? JSON.parse(saved) : initialStudents;
-  });
+  // React Query hooks
+  const { data: mahasiswa = [], isLoading } = useGetMahasiswa();
+  const addMahasiswaMutation = useAddMahasiswa();
+  const updateMahasiswaMutation = useUpdateMahasiswa();
+  const deleteMahasiswaMutation = useDeleteMahasiswa();
 
   // state selected mahasiswa
   const [selectedMahasiswa, setSelectedMahasiswa] = useState(null);
@@ -28,13 +33,8 @@ const Mahasiswa = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState('');
 
-  // Persist to local storage
-  useEffect(() => {
-    localStorage.setItem('pemsik_students', JSON.stringify(mahasiswa));
-  }, [mahasiswa]);
-
   // storeMahasiswa
-  const storeMahasiswa = (newMahasiswa) => {
+  const storeMahasiswa = async (newMahasiswa) => {
     const newStudent = {
       ...newMahasiswa,
       id: mahasiswa.length ? Math.max(...mahasiswa.map((s) => s.id)) + 1 : 1,
@@ -42,31 +42,37 @@ const Mahasiswa = () => {
       hp: newMahasiswa.hp || '-',
       address: newMahasiswa.address || '-'
     };
-    setMahasiswa([newStudent, ...mahasiswa]);
-    showToast(`Mahasiswa ${newStudent.name} berhasil ditambahkan!`);
+    try {
+      await addMahasiswaMutation.mutateAsync(newStudent);
+      showToast(`Mahasiswa ${newStudent.name} berhasil ditambahkan!`);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Gagal menambahkan mahasiswa.');
+    }
   };
 
   // updateMahasiswa
-  const updateMahasiswa = (nim, updatedMahasiswa) => {
-    setMahasiswa((prev) =>
-      prev.map((s) =>
-        s.nim.toString().trim() === nim.toString().trim()
-          ? {
-              ...s,
-              ...updatedMahasiswa,
-              ipk: parseFloat(updatedMahasiswa.ipk).toFixed(2),
-              hp: updatedMahasiswa.hp || '-',
-              address: updatedMahasiswa.address || '-'
-            }
-          : s
-      )
-    );
-    showToast(`Data mahasiswa ${updatedMahasiswa.name} berhasil diperbarui!`);
+  const updateMahasiswa = async (nim, updatedMahasiswa) => {
+    const updatePayload = {
+      ...updatedMahasiswa,
+      ipk: parseFloat(updatedMahasiswa.ipk).toFixed(2),
+      hp: updatedMahasiswa.hp || '-',
+      address: updatedMahasiswa.address || '-'
+    };
+    try {
+      await updateMahasiswaMutation.mutateAsync(updatePayload);
+      showToast(`Data mahasiswa ${updatedMhs => updatedMahasiswa.name} berhasil diperbarui!`);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Gagal memperbarui mahasiswa.');
+    }
   };
 
   // deleteMahasiswa
-  const deleteMahasiswa = (nim) => {
-    setMahasiswa((prev) => prev.filter((s) => s.nim.toString().trim() !== nim.toString().trim()));
+  const deleteMahasiswa = async (nim) => {
+    try {
+      await deleteMahasiswaMutation.mutateAsync(nim);
+    } catch (err) {
+      showToast('Gagal menghapus data mahasiswa.');
+    }
   };
 
   // openAddModal
@@ -155,14 +161,19 @@ const Mahasiswa = () => {
         </div>
       </div>
 
-      {/* Renders MahasiswaTable component */}
-      <MahasiswaTable 
-        mahasiswa={filteredMahasiswa} 
-        openEditModal={openEditModal} 
-        onDelete={handleDelete}
-        canWrite={canWrite}
-        canDelete={canDelete}
-      />
+      {isLoading ? (
+        <div className="loading-spinner-wrapper" style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+          <Loader2 className="spinner-icon animate-spin" size={32} style={{ color: 'var(--primary)', animation: 'btn-spin 1s linear infinite' }} />
+        </div>
+      ) : (
+        <MahasiswaTable 
+          mahasiswa={filteredMahasiswa} 
+          openEditModal={openEditModal} 
+          onDelete={handleDelete}
+          canWrite={canWrite}
+          canDelete={canDelete}
+        />
+      )}
 
       {/* Renders MahasiswaModal component */}
       <MahasiswaModal 
