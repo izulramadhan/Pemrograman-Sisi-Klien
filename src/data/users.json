@@ -1,0 +1,26 @@
+[
+  {
+    "username": "admin",
+    "password": "password123",
+    "name": "Azizul Izul",
+    "email": "admin@pemsik.com",
+    "role": "Super Admin",
+    "avatar": ""
+  },
+  {
+    "username": "dosen",
+    "password": "dosenpassword",
+    "name": "Dr. Ir. Budi Santoso",
+    "email": "budi.santoso@pemsik.com",
+    "role": "Dosen",
+    "avatar": ""
+  },
+  {
+    "username": "mahasiswa",
+    "password": "mahasiswapassword",
+    "name": "Siti Rahma",
+    "email": "siti.rahma@pemsik.com",
+    "role": "Viewer",
+    "avatar": ""
+  }
+]

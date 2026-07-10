@@ -1,0 +1,21 @@
+.register-card {
+  max-width: 500px !important;
+  margin: 2rem auto;
+  animation: authCardFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.register-success-alert {
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--secondary-hover);
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius-md);
+  font-size: 0.825rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  animation: fadeIn var(--transition-fast) forwards;
+}
+
+.register-footer-redirect a:hover {
+  text-decoration: underline !important;
+}

@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "nim": "20260001",
+    "name": "Budi Santoso",
+    "email": "budi.santoso@mahasiswa.pemsik.ac.id",
+    "prodi": "Teknik Informatika",
+    "ipk": "3.85",
+    "status": true,
+    "hp": "0812-3456-7890",
+    "address": "Jl. Merdeka No. 10, Jakarta"
+  },
+  {
+    "id": 2,
+    "nim": "20260002",
+    "name": "Siti Aminah",
+    "email": "siti.aminah@mahasiswa.pemsik.ac.id",
+    "prodi": "Sistem Informasi",
+    "ipk": "3.62",
+    "status": true,
+    "hp": "0823-4567-8901",
+    "address": "Jl. Sudirman No. 45, Bandung"
+  },
+  {
+    "id": 3,
+    "nim": "20260003",
+    "name": "Rian Hidayat",
+    "email": "rian.hidayat@mahasiswa.pemsik.ac.id",
+    "prodi": "Teknik Komputer",
+    "ipk": "3.45",
+    "status": false,
+    "hp": "0856-7890-1234",
+    "address": "Jl. Diponegoro No. 89, Surabaya"
+  },
+  {
+    "id": 4,
+    "nim": "20260004",
+    "name": "Dewi Sartika",
+    "email": "dewi.sartika@mahasiswa.pemsik.ac.id",
+    "prodi": "Teknik Informatika",
+    "ipk": "3.92",
+    "status": true,
+    "hp": "0878-9012-3456",
+    "address": "Jl. Gajah Mada No. 12, Yogyakarta"
+  },
+  {
+    "id": 5,
+    "nim": "20260005",
+    "name": "Fahri Hamzah",
+    "email": "fahri.hamzah@mahasiswa.pemsik.ac.id",
+    "prodi": "Sistem Informasi",
+    "ipk": "2.98",
+    "status": true,
+    "hp": "0899-0123-4567",
+    "address": "Jl. Hasanuddin No. 3, Makassar"
+  }
+]
