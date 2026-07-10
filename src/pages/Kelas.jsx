@@ -5,6 +5,9 @@ import Button from '../components/atoms/Button';
 import KelasTable from './KelasTable';
 import KelasModal from './KelasModal';
 import Pagination from '../components/molecules/Pagination';
+import { useGetDosen } from '../utils/hooks/useDosenQuery';
+import { useGetMataKuliah } from '../utils/hooks/useMataKuliahQuery';
+import { useGetMahasiswa } from '../utils/hooks/useMahasiswaQuery';
 import { 
   useGetKelas, 
   useAddKelas, 
@@ -19,8 +22,12 @@ const Kelas = () => {
   const canWrite = user?.permissions?.includes('write');
   const canDelete = user?.permissions?.includes('delete');
 
-  // React Query hooks
-  const { data: kelas = [], isLoading } = useGetKelas();
+  // React Query hooks for list fetchings
+  const { data: kelas = [], isLoading: isKelasLoading } = useGetKelas();
+  const { data: dosenList = [], isLoading: isDosenLoading } = useGetDosen();
+  const { data: matakuliahList = [], isLoading: isMKLoading } = useGetMataKuliah();
+  const { data: studentList = [], isLoading: isStudentLoading } = useGetMahasiswa();
+
   const addKelasMutation = useAddKelas();
   const updateKelasMutation = useUpdateKelas();
   const deleteKelasMutation = useDeleteKelas();
@@ -42,7 +49,8 @@ const Kelas = () => {
       showToast(`Kelas ${newKelas.nama} berhasil ditambahkan!`);
       setCurrentPage(1); // Go back to first page
     } catch (err) {
-      showToast(err.response?.data?.message || 'Gagal menambahkan kelas.');
+      const msg = err.response?.data?.message || 'Gagal menambahkan kelas.';
+      showToast(msg);
     }
   };
 
@@ -52,7 +60,8 @@ const Kelas = () => {
       await updateKelasMutation.mutateAsync(updatedKelas);
       showToast(`Data kelas ${updatedKelas.nama} berhasil diperbarui!`);
     } catch (err) {
-      showToast(err.response?.data?.message || 'Gagal memperbarui kelas.');
+      const msg = err.response?.data?.message || 'Gagal memperbarui kelas.';
+      showToast(msg);
     }
   };
 
@@ -60,11 +69,6 @@ const Kelas = () => {
   const deleteKelas = async (kode) => {
     try {
       await deleteKelasMutation.mutateAsync(kode);
-      const remainingItems = filteredKelas.length - 1;
-      const maxPages = Math.ceil(remainingItems / itemsPerPage) || 1;
-      if (currentPage > maxPages) {
-        setCurrentPage(maxPages);
-      }
     } catch (err) {
       showToast('Gagal menghapus kelas.');
     }
@@ -104,7 +108,7 @@ const Kelas = () => {
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3000);
+    setTimeout(() => setToastMessage(''), 6000); // 6 seconds for complex validation messages!
   };
 
   const handleSearchChange = (e) => {
@@ -112,12 +116,17 @@ const Kelas = () => {
     setCurrentPage(1); // Reset to page 1 on search
   };
 
-  const filteredKelas = kelas.filter(
-    k =>
+  const filteredKelas = kelas.filter(k => {
+    const course = matakuliahList.find(m => m.kode === k.matakuliah);
+    const lecturer = dosenList.find(d => d.nidn === k.dosen);
+    
+    return (
       k.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
       k.kode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      k.dosenWali.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      (course && course.nama.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (lecturer && lecturer.nama.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  });
 
   // Slicing data for active page
   const totalItems = filteredKelas.length;
@@ -127,11 +136,12 @@ const Kelas = () => {
     currentPage * itemsPerPage
   );
 
+  const isGlobalLoading = isKelasLoading || isDosenLoading || isMKLoading || isStudentLoading;
+
   return (
     <div className="mahasiswa-page-container">
       {toastMessage && (
-        <div className="admin-toast-notification">
-          <Check size={16} />
+        <div className="admin-toast-notification" style={{ maxWidth: '450px', border: '1px solid var(--primary)' }}>
           <span>{toastMessage}</span>
         </div>
       )}
@@ -142,7 +152,7 @@ const Kelas = () => {
           <p className="admin-page-subtitle">Daftar kelas akademik perkuliahan, nama kelas, dosen wali, dan jumlah mahasiswa</p>
         </div>
         {canWrite && (
-          <Button onClick={openAddModal} className="add-user-top-btn">
+          <Button onClick={openAddModal} className="add-user-top-btn" disabled={isGlobalLoading}>
             <Plus size={18} style={{ marginRight: '0.5rem' }} />
             Tambah Kelas
           </Button>
@@ -154,7 +164,7 @@ const Kelas = () => {
           <Search size={16} className="search-bar-icon" />
           <input
             type="text"
-            placeholder="Cari berdasarkan Kode, Nama, atau Dosen Wali..."
+            placeholder="Cari berdasarkan Kode, Kelas, Matakuliah, atau Dosen..."
             value={searchQuery}
             onChange={handleSearchChange}
             className="table-search-input"
@@ -163,7 +173,7 @@ const Kelas = () => {
         </div>
       </div>
 
-      {isLoading ? (
+      {isGlobalLoading ? (
         <div className="loading-spinner-wrapper" style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
           <Loader2 className="spinner-icon animate-spin" size={32} style={{ color: 'var(--primary)', animation: 'btn-spin 1s linear infinite' }} />
         </div>
@@ -171,6 +181,8 @@ const Kelas = () => {
         <>
           <KelasTable
             kelas={paginatedKelas}
+            matakuliahList={matakuliahList}
+            dosenList={dosenList}
             openEditModal={openEditModal}
             onDelete={handleDelete}
             canWrite={canWrite}
@@ -194,6 +206,9 @@ const Kelas = () => {
         onSubmit={handleSubmit}
         selectedKelas={selectedKelas}
         kelasList={kelas}
+        dosenList={dosenList}
+        matakuliahList={matakuliahList}
+        studentList={studentList}
       />
     </div>
   );

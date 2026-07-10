@@ -5,6 +5,8 @@ import Button from '../components/atoms/Button';
 import MahasiswaModal from './MahasiswaModal';
 import MahasiswaTable from './MahasiswaTable';
 import Pagination from '../components/molecules/Pagination';
+import { useGetKelas } from '../utils/hooks/useKelasQuery';
+import { useGetMataKuliah } from '../utils/hooks/useMataKuliahQuery';
 import { 
   useGetMahasiswa, 
   useAddMahasiswa, 
@@ -19,7 +21,10 @@ const Mahasiswa = () => {
   const canDelete = user?.permissions?.includes('delete');
 
   // React Query hooks
-  const { data: mahasiswa = [], isLoading } = useGetMahasiswa();
+  const { data: mahasiswa = [], isLoading: isMhsLoading } = useGetMahasiswa();
+  const { data: kelasList = [], isLoading: isKelasLoading } = useGetKelas();
+  const { data: mkList = [], isLoading: isMKLoading } = useGetMataKuliah();
+
   const addMahasiswaMutation = useAddMahasiswa();
   const updateMahasiswaMutation = useUpdateMahasiswa();
   const deleteMahasiswaMutation = useDeleteMahasiswa();
@@ -75,7 +80,6 @@ const Mahasiswa = () => {
   const deleteMahasiswa = async (nim) => {
     try {
       await deleteMahasiswaMutation.mutateAsync(nim);
-      // Adjust current page if items on current page reduce to zero
       const remainingItems = filteredMahasiswa.length - 1;
       const maxPages = Math.ceil(remainingItems / itemsPerPage) || 1;
       if (currentPage > maxPages) {
@@ -139,13 +143,25 @@ const Mahasiswa = () => {
       s.prodi.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Slicing data for active page list views
-  const totalItems = filteredMahasiswa.length;
+  // Map SKS taken dynamically for each student!
+  const mahasiswaWithSks = filteredMahasiswa.map(student => {
+    const enrolledClasses = kelasList.filter(k => k.mahasiswa?.includes(student.nim));
+    const totalSks = enrolledClasses.reduce((sum, k) => {
+      const course = mkList.find(m => m.kode === k.matakuliah);
+      return sum + (course ? parseInt(course.sks) : 0);
+    }, 0);
+    return { ...student, totalSks };
+  });
+
+  // Slicing data for active page
+  const totalItems = mahasiswaWithSks.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-  const paginatedMahasiswa = filteredMahasiswa.slice(
+  const paginatedMahasiswa = mahasiswaWithSks.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const isGlobalLoading = isMhsLoading || isKelasLoading || isMKLoading;
 
   return (
     <div className="mahasiswa-page-container">
@@ -162,7 +178,7 @@ const Mahasiswa = () => {
           <p className="admin-page-subtitle">Daftar mahasiswa terdaftar beserta informasi studi dan status akademik</p>
         </div>
         {canWrite && (
-          <Button onClick={openAddModal} className="add-user-top-btn">
+          <Button onClick={openAddModal} className="add-user-top-btn" disabled={isGlobalLoading}>
             <Plus size={18} style={{ marginRight: '0.5rem' }} />
             Tambah Mahasiswa
           </Button>
@@ -183,7 +199,7 @@ const Mahasiswa = () => {
         </div>
       </div>
 
-      {isLoading ? (
+      {isGlobalLoading ? (
         <div className="loading-spinner-wrapper" style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
           <Loader2 className="spinner-icon animate-spin" size={32} style={{ color: 'var(--primary)', animation: 'btn-spin 1s linear infinite' }} />
         </div>

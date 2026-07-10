@@ -5,6 +5,8 @@ import Button from '../components/atoms/Button';
 import DosenTable from './DosenTable';
 import DosenModal from './DosenModal';
 import Pagination from '../components/molecules/Pagination';
+import { useGetKelas } from '../utils/hooks/useKelasQuery';
+import { useGetMataKuliah } from '../utils/hooks/useMataKuliahQuery';
 import { 
   useGetDosen, 
   useAddDosen, 
@@ -20,7 +22,10 @@ const Dosen = () => {
   const canDelete = user?.permissions?.includes('delete');
 
   // React Query hooks
-  const { data: dosen = [], isLoading } = useGetDosen();
+  const { data: dosen = [], isLoading: isDsnLoading } = useGetDosen();
+  const { data: kelasList = [], isLoading: isKelasLoading } = useGetKelas();
+  const { data: mkList = [], isLoading: isMKLoading } = useGetMataKuliah();
+
   const addDosenMutation = useAddDosen();
   const updateDosenMutation = useUpdateDosen();
   const deleteDosenMutation = useDeleteDosen();
@@ -119,13 +124,25 @@ const Dosen = () => {
       d.keahlian.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Map Dosen teaching SKS load dynamically!
+  const dosenWithSks = filteredDosen.map(teacher => {
+    const classesTaught = kelasList.filter(k => k.dosen === teacher.nidn);
+    const totalSks = classesTaught.reduce((sum, k) => {
+      const course = mkList.find(m => m.kode === k.matakuliah);
+      return sum + (course ? parseInt(course.sks) : 0);
+    }, 0);
+    return { ...teacher, totalSks };
+  });
+
   // Slicing data for active page
-  const totalItems = filteredDosen.length;
+  const totalItems = dosenWithSks.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-  const paginatedDosen = filteredDosen.slice(
+  const paginatedDosen = dosenWithSks.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const isGlobalLoading = isDsnLoading || isKelasLoading || isMKLoading;
 
   return (
     <div className="mahasiswa-page-container">
@@ -142,7 +159,7 @@ const Dosen = () => {
           <p className="admin-page-subtitle">Daftar tenaga pengajar, nidn, kualifikasi bidang dan status keaktifan</p>
         </div>
         {canWrite && (
-          <Button onClick={openAddModal} className="add-user-top-btn">
+          <Button onClick={openAddModal} className="add-user-top-btn" disabled={isGlobalLoading}>
             <Plus size={18} style={{ marginRight: '0.5rem' }} />
             Tambah Dosen
           </Button>
@@ -163,7 +180,7 @@ const Dosen = () => {
         </div>
       </div>
 
-      {isLoading ? (
+      {isGlobalLoading ? (
         <div className="loading-spinner-wrapper" style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
           <Loader2 className="spinner-icon animate-spin" size={32} style={{ color: 'var(--primary)', animation: 'btn-spin 1s linear infinite' }} />
         </div>

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import initialStudents from '../data/students.json';
 
 // --- MOCK DATABASE SEEDING ---
 const seedDatabase = () => {
@@ -36,7 +37,7 @@ const seedDatabase = () => {
     ]));
   }
 
-  // 2. Preseed Students (Mahasiswa - 12 items for pagination)
+  // 2. Preseed Students (Mahasiswa)
   const mhs = localStorage.getItem('pemsik_students');
   if (!mhs || JSON.parse(mhs).length < 10) {
     localStorage.setItem('pemsik_students', JSON.stringify([
@@ -175,7 +176,7 @@ const seedDatabase = () => {
     ]));
   }
 
-  // 3. Preseed Dosen (11 items for pagination)
+  // 3. Preseed Dosen
   const dsn = localStorage.getItem('pemsik_dosen');
   if (!dsn || JSON.parse(dsn).length < 10) {
     localStorage.setItem('pemsik_dosen', JSON.stringify([
@@ -259,7 +260,7 @@ const seedDatabase = () => {
     ]));
   }
 
-  // 4. Preseed Mata Kuliah (11 items for pagination)
+  // 4. Preseed Mata Kuliah
   const mk = localStorage.getItem('pemsik_matakuliah');
   if (!mk || JSON.parse(mk).length < 10) {
     localStorage.setItem('pemsik_matakuliah', JSON.stringify([
@@ -343,85 +344,48 @@ const seedDatabase = () => {
     ]));
   }
 
-  // 5. Preseed Kelas (Classes - 11 items for pagination)
+  // 5. Preseed Kelas (Extended schema with relations)
   const kls = localStorage.getItem('pemsik_kelas');
-  if (!kls || JSON.parse(kls).length < 10) {
+  if (!kls || JSON.parse(kls).length < 5 || !JSON.parse(kls)[0].matakuliah) {
     localStorage.setItem('pemsik_kelas', JSON.stringify([
       {
         kode: 'K-101',
         nama: 'IF-4A',
-        dosenWali: 'Dr. Ir. Azizul Izul, M.T.',
-        jumlahMahasiswa: 28,
+        matakuliah: 'IF-201', // Pemrograman Web (3 SKS)
+        dosen: '0412038501',      // Dr. Ir. Azizul Izul, M.T.
+        mahasiswa: ['20260001', '20260002', '20260004'],
         status: true
       },
       {
         kode: 'K-102',
         nama: 'SI-2B',
-        dosenWali: 'Budi Santoso, M.Kom.',
-        jumlahMahasiswa: 24,
+        matakuliah: 'IF-202', // Kecerdasan Buatan (3 SKS)
+        dosen: '0415088902',      // Budi Santoso, M.Kom.
+        mahasiswa: ['20260002', '20260005', '20260008'],
         status: true
       },
       {
         kode: 'K-103',
         nama: 'TK-6C',
-        dosenWali: 'Siti Aminah, M.T.',
-        jumlahMahasiswa: 18,
+        matakuliah: 'IF-203', // Rekayasa Perangkat Lunak (4 SKS)
+        dosen: '0419119103',      // Siti Aminah, M.T.
+        mahasiswa: ['20260001', '20260003', '20260006'],
         status: false
       },
       {
         kode: 'K-104',
         nama: 'IF-2A',
-        dosenWali: 'Diana Lestari, M.T.',
-        jumlahMahasiswa: 30,
+        matakuliah: 'IF-204', // Jaringan Komputer (3 SKS)
+        dosen: '0430098908',      // Gunawan, M.T.
+        mahasiswa: ['20260004', '20260006', '20260009'],
         status: true
       },
       {
         kode: 'K-105',
         nama: 'SI-4B',
-        dosenWali: 'Eko Prasetyo, M.Cs.',
-        jumlahMahasiswa: 26,
-        status: true
-      },
-      {
-        kode: 'K-106',
-        nama: 'TK-2A',
-        dosenWali: 'Gunawan, M.T.',
-        jumlahMahasiswa: 22,
-        status: true
-      },
-      {
-        kode: 'K-107',
-        nama: 'IF-6B',
-        dosenWali: 'Haryanto, Ph.D.',
-        jumlahMahasiswa: 29,
-        status: true
-      },
-      {
-        kode: 'K-108',
-        nama: 'SI-6A',
-        dosenWali: 'Indah Permata, M.T.',
-        jumlahMahasiswa: 25,
-        status: false
-      },
-      {
-        kode: 'K-109',
-        nama: 'TK-4B',
-        dosenWali: 'Joko Susilo, M.Cs.',
-        jumlahMahasiswa: 20,
-        status: true
-      },
-      {
-        kode: 'K-110',
-        nama: 'IF-8A',
-        dosenWali: 'Diana Lestari, M.T.',
-        jumlahMahasiswa: 15,
-        status: true
-      },
-      {
-        kode: 'K-111',
-        nama: 'SI-8B',
-        dosenWali: 'Budi Santoso, M.Kom.',
-        jumlahMahasiswa: 12,
+        matakuliah: 'IF-205', // Sistem Operasi (3 SKS)
+        dosen: '0408078605',      // Diana Lestari, M.T.
+        mahasiswa: ['20260002', '20260008', '20260011'],
         status: true
       }
     ]));
@@ -431,9 +395,78 @@ const seedDatabase = () => {
 // Execute seeding
 seedDatabase();
 
+// --- BUSINESS LOGIC RULES VALIDATOR ---
+const validateKelasConstraints = (kelasCode, newMKCode, newDosenNidn, studentNims) => {
+  const classes = JSON.parse(localStorage.getItem('pemsik_kelas') || '[]');
+  const courses = JSON.parse(localStorage.getItem('pemsik_matakuliah') || '[]');
+  const lecturers = JSON.parse(localStorage.getItem('pemsik_dosen') || '[]');
+  const students = JSON.parse(localStorage.getItem('pemsik_students') || '[]');
+
+  // Fetch current course object to know its SKS
+  const currentCourse = courses.find(m => m.kode.toLowerCase() === newMKCode.toLowerCase());
+  const courseSks = currentCourse ? parseInt(currentCourse.sks) : 0;
+
+  // RULE 1: "1 Mata Kuliah hanya boleh ada 1 Dosen"
+  // If this course code is already assigned to a different lecturer in any other class, throw error
+  const duplicateCourseClass = classes.find(
+    k => k.matakuliah.toLowerCase() === newMKCode.toLowerCase() && 
+         k.kode.toLowerCase() !== kelasCode.toLowerCase() &&
+         k.dosen !== newDosenNidn
+  );
+
+  if (duplicateCourseClass) {
+    const assignedLecturer = lecturers.find(d => d.nidn === duplicateCourseClass.dosen);
+    const lecturerName = assignedLecturer ? assignedLecturer.nama : duplicateCourseClass.dosen;
+    throw new Error(
+      `Pemasangan Dosen gagal: Mata Kuliah ${currentCourse?.nama} (${newMKCode}) sudah diajarkan oleh Dosen "${lecturerName}" di kelas lain (${duplicateCourseClass.nama}).`
+    );
+  }
+
+  // RULE 2: Max Dosen SKS = 12 SKS
+  // Sum SKS of courses taught by the selected lecturer in all OTHER classes
+  const otherLecturerClasses = classes.filter(
+    k => k.dosen === newDosenNidn && k.kode.toLowerCase() !== kelasCode.toLowerCase()
+  );
+  let totalDosenSks = otherLecturerClasses.reduce((sum, k) => {
+    const co = courses.find(c => c.kode === k.matakuliah);
+    return sum + (co ? parseInt(co.sks) : 0);
+  }, 0);
+
+  totalDosenSks += courseSks;
+  if (totalDosenSks > 12) {
+    const lecturer = lecturers.find(d => d.nidn === newDosenNidn);
+    const name = lecturer ? lecturer.nama : newDosenNidn;
+    throw new Error(
+      `Batas mengajar terlampaui: Dosen "${name}" memiliki total beban ${totalDosenSks} SKS, yang melebihi batas maksimum 12 SKS.`
+    );
+  }
+
+  // RULE 3: Max Student SKS = 24 SKS
+  // Check load for each student in the list
+  for (const nim of studentNims) {
+    const otherStudentClasses = classes.filter(
+      k => k.mahasiswa?.includes(nim) && k.kode.toLowerCase() !== kelasCode.toLowerCase()
+    );
+    let totalStudentSks = otherStudentClasses.reduce((sum, k) => {
+      const co = courses.find(c => c.kode === k.matakuliah);
+      return sum + (co ? parseInt(co.sks) : 0);
+    }, 0);
+
+    totalStudentSks += courseSks;
+    if (totalStudentSks > 24) {
+      const student = students.find(s => s.nim.toString().trim() === nim.toString().trim());
+      const name = student ? student.name : nim;
+      throw new Error(
+        `Batas beban SKS mahasiswa terlampaui: Mahasiswa "${name}" (${nim}) terdaftar di total ${totalStudentSks} SKS, melebihi kapasitas maksimum 24 SKS.`
+      );
+    }
+  }
+
+  return true;
+};
+
 // --- AXIOS CUSTOM MOCK ADAPTER ---
 const mockAdapter = async (config) => {
-  // Simulate network latency (100ms - 200ms)
   await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 100));
 
   const { url, method, data } = config;
@@ -851,6 +884,19 @@ const mockAdapter = async (config) => {
       };
     }
 
+    try {
+      // Validate Course, Lecturer, and Student SKS restrictions
+      validateKelasConstraints(newKelas.kode, newKelas.matakuliah, newKelas.dosen, newKelas.mahasiswa || []);
+    } catch (err) {
+      return {
+        status: 400,
+        statusText: 'Bad Request',
+        headers: {},
+        config,
+        data: { message: err.message }
+      };
+    }
+
     kelas.unshift(newKelas);
     localStorage.setItem('pemsik_kelas', JSON.stringify(kelas));
 
@@ -871,6 +917,19 @@ const mockAdapter = async (config) => {
 
     const index = kelas.findIndex(k => k.kode.toLowerCase() === kode.toLowerCase());
     if (index !== -1) {
+      try {
+        // Validate Course, Lecturer, and Student SKS restrictions
+        validateKelasConstraints(kode, updatedKelas.matakuliah, updatedKelas.dosen, updatedKelas.mahasiswa || []);
+      } catch (err) {
+        return {
+          status: 400,
+          statusText: 'Bad Request',
+          headers: {},
+          config,
+          data: { message: err.message }
+        };
+      }
+
       kelas[index] = { ...kelas[index], ...updatedKelas };
       localStorage.setItem('pemsik_kelas', JSON.stringify(kelas));
       return {
@@ -910,9 +969,6 @@ const mockAdapter = async (config) => {
 
   throw new Error(`Endpoint mock [${method.toUpperCase()}] ${url} tidak terdaftar!`);
 };
-
-// Execute seeding
-seedDatabase();
 
 // Create Axios Instance
 const api = axios.create({
