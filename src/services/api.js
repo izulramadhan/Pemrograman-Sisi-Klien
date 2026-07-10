@@ -1,10 +1,10 @@
 import axios from 'axios';
-import initialStudents from '../data/students.json';
 
 // --- MOCK DATABASE SEEDING ---
 const seedDatabase = () => {
   // 1. Preseed Users
-  if (!localStorage.getItem('pemsik_users')) {
+  const users = localStorage.getItem('pemsik_users');
+  if (!users || JSON.parse(users).length < 3) {
     localStorage.setItem('pemsik_users', JSON.stringify([
       {
         username: 'admin',
@@ -36,13 +36,148 @@ const seedDatabase = () => {
     ]));
   }
 
-  // 2. Preseed Students (Mahasiswa)
-  if (!localStorage.getItem('pemsik_students')) {
-    localStorage.setItem('pemsik_students', JSON.stringify(initialStudents));
+  // 2. Preseed Students (Mahasiswa - 12 items for pagination)
+  const mhs = localStorage.getItem('pemsik_students');
+  if (!mhs || JSON.parse(mhs).length < 10) {
+    localStorage.setItem('pemsik_students', JSON.stringify([
+      {
+        id: 1,
+        nim: "20260001",
+        name: "Budi Santoso",
+        email: "budi.santoso@mahasiswa.pemsik.ac.id",
+        prodi: "Teknik Informatika",
+        ipk: "3.85",
+        status: true,
+        hp: "0812-3456-7890",
+        address: "Jl. Merdeka No. 10, Jakarta"
+      },
+      {
+        id: 2,
+        nim: "20260002",
+        name: "Siti Aminah",
+        email: "siti.aminah@mahasiswa.pemsik.ac.id",
+        prodi: "Sistem Informasi",
+        ipk: "3.62",
+        status: true,
+        hp: "0823-4567-8901",
+        address: "Jl. Sudirman No. 45, Bandung"
+      },
+      {
+        id: 3,
+        nim: "20260003",
+        name: "Rian Hidayat",
+        email: "rian.hidayat@mahasiswa.pemsik.ac.id",
+        prodi: "Teknik Komputer",
+        ipk: "3.45",
+        status: false,
+        hp: "0856-7890-1234",
+        address: "Jl. Diponegoro No. 89, Surabaya"
+      },
+      {
+        id: 4,
+        nim: "20260004",
+        name: "Dewi Sartika",
+        email: "dewi.sartika@mahasiswa.pemsik.ac.id",
+        prodi: "Teknik Informatika",
+        ipk: "3.92",
+        status: true,
+        hp: "0878-9012-3456",
+        address: "Jl. Gajah Mada No. 12, Yogyakarta"
+      },
+      {
+        id: 5,
+        nim: "20260005",
+        name: "Fahri Hamzah",
+        email: "fahri.hamzah@mahasiswa.pemsik.ac.id",
+        prodi: "Sistem Informasi",
+        ipk: "2.98",
+        status: true,
+        hp: "0899-0123-4567",
+        address: "Jl. Hasanuddin No. 3, Makassar"
+      },
+      {
+        id: 6,
+        nim: "20260006",
+        name: "Ahmad Dahlan",
+        email: "ahmad.dahlan@mahasiswa.pemsik.ac.id",
+        prodi: "Teknik Komputer",
+        ipk: "3.75",
+        status: true,
+        hp: "0812-7890-1234",
+        address: "Jl. Pemuda No. 7, Semarang"
+      },
+      {
+        id: 7,
+        nim: "20260007",
+        name: "Megawati Soekarno",
+        email: "mega.s@mahasiswa.pemsik.ac.id",
+        prodi: "Teknik Informatika",
+        ipk: "3.10",
+        status: false,
+        hp: "0821-4567-8901",
+        address: "Jl. Teuku Umar No. 29, Jakarta"
+      },
+      {
+        id: 8,
+        nim: "20260008",
+        name: "Susilo Bambang",
+        email: "sby@mahasiswa.pemsik.ac.id",
+        prodi: "Sistem Informasi",
+        ipk: "3.55",
+        status: true,
+        hp: "0811-9012-3456",
+        address: "Jl. Cikeas Indah No. 1, Bogor"
+      },
+      {
+        id: 9,
+        nim: "20260009",
+        name: "Joko Widodo",
+        email: "jokowi@mahasiswa.pemsik.ac.id",
+        prodi: "Teknik Informatika",
+        ipk: "3.40",
+        status: true,
+        hp: "0812-9999-8888",
+        address: "Jl. Istana Negara No. 2, Solo"
+      },
+      {
+        id: 10,
+        nim: "20260010",
+        name: "Prabowo Subianto",
+        email: "prabowo@mahasiswa.pemsik.ac.id",
+        prodi: "Teknik Komputer",
+        ipk: "3.67",
+        status: true,
+        hp: "0813-1111-2222",
+        address: "Jl. Kertanegara No. 4, Jakarta"
+      },
+      {
+        id: 11,
+        nim: "20260011",
+        name: "Anies Baswedan",
+        email: "anies@mahasiswa.pemsik.ac.id",
+        prodi: "Sistem Informasi",
+        ipk: "3.89",
+        status: true,
+        hp: "0815-2222-3333",
+        address: "Jl. Lebak Bulus Dalam, Jakarta"
+      },
+      {
+        id: 12,
+        nim: "20260012",
+        name: "Ganjar Pranowo",
+        email: "ganjar@mahasiswa.pemsik.ac.id",
+        prodi: "Teknik Informatika",
+        ipk: "3.52",
+        status: false,
+        hp: "0817-3333-4444",
+        address: "Jl. Kalisari No. 12, Semarang"
+      }
+    ]));
   }
 
-  // 3. Preseed Dosen
-  if (!localStorage.getItem('pemsik_dosen')) {
+  // 3. Preseed Dosen (11 items for pagination)
+  const dsn = localStorage.getItem('pemsik_dosen');
+  if (!dsn || JSON.parse(dsn).length < 10) {
     localStorage.setItem('pemsik_dosen', JSON.stringify([
       {
         nidn: '0412038501',
@@ -64,12 +199,69 @@ const seedDatabase = () => {
         email: 'siti@pemsik.ac.id',
         keahlian: 'Jaringan Komputer',
         status: false
+      },
+      {
+        nidn: '0422058804',
+        nama: 'Haryanto, Ph.D.',
+        email: 'haryanto@pemsik.ac.id',
+        keahlian: 'Kecerdasan Buatan',
+        status: true
+      },
+      {
+        nidn: '0408078605',
+        nama: 'Diana Lestari, M.T.',
+        email: 'diana@pemsik.ac.id',
+        keahlian: 'Sistem Informasi',
+        status: true
+      },
+      {
+        nidn: '0401129006',
+        nama: 'Eko Prasetyo, M.Cs.',
+        email: 'eko@pemsik.ac.id',
+        keahlian: 'Rekayasa Perangkat Lunak',
+        status: true
+      },
+      {
+        nidn: '0411118707',
+        nama: 'Fitriani, Ph.D.',
+        email: 'fitriani@pemsik.ac.id',
+        keahlian: 'Data Science',
+        status: true
+      },
+      {
+        nidn: '0430098908',
+        nama: 'Gunawan, M.T.',
+        email: 'gunawan@pemsik.ac.id',
+        keahlian: 'Jaringan Komputer',
+        status: true
+      },
+      {
+        nidn: '0414028409',
+        nama: 'Hendra Wijaya, M.Kom.',
+        email: 'hendra@pemsik.ac.id',
+        keahlian: 'Kecerdasan Buatan',
+        status: false
+      },
+      {
+        nidn: '0425049210',
+        nama: 'Indah Permata, M.T.',
+        email: 'indah@pemsik.ac.id',
+        keahlian: 'Sistem Informasi',
+        status: true
+      },
+      {
+        nidn: '0418069311',
+        nama: 'Joko Susilo, M.Cs.',
+        email: 'joko@pemsik.ac.id',
+        keahlian: 'Rekayasa Perangkat Lunak',
+        status: true
       }
     ]));
   }
 
-  // 4. Preseed Mata Kuliah
-  if (!localStorage.getItem('pemsik_matakuliah')) {
+  // 4. Preseed Mata Kuliah (11 items for pagination)
+  const mk = localStorage.getItem('pemsik_matakuliah');
+  if (!mk || JSON.parse(mk).length < 10) {
     localStorage.setItem('pemsik_matakuliah', JSON.stringify([
       {
         kode: 'IF-201',
@@ -91,12 +283,69 @@ const seedDatabase = () => {
         sks: '4',
         semester: '6',
         sifat: 'Wajib'
+      },
+      {
+        kode: 'IF-204',
+        nama: 'Jaringan Komputer',
+        sks: '3',
+        semester: '4',
+        sifat: 'Wajib'
+      },
+      {
+        kode: 'IF-205',
+        nama: 'Sistem Operasi',
+        sks: '3',
+        semester: '3',
+        sifat: 'Wajib'
+      },
+      {
+        kode: 'IF-206',
+        nama: 'Basis Data',
+        sks: '4',
+        semester: '3',
+        sifat: 'Wajib'
+      },
+      {
+        kode: 'IF-207',
+        nama: 'Keamanan Informasi',
+        sks: '3',
+        semester: '7',
+        sifat: 'Pilihan'
+      },
+      {
+        kode: 'IF-208',
+        nama: 'Grafika Komputer',
+        sks: '3',
+        semester: '6',
+        sifat: 'Pilihan'
+      },
+      {
+        kode: 'IF-209',
+        nama: 'Pemrograman Mobile',
+        sks: '4',
+        semester: '5',
+        sifat: 'Wajib'
+      },
+      {
+        kode: 'IF-210',
+        nama: 'Interaksi Manusia & Komputer',
+        sks: '2',
+        semester: '2',
+        sifat: 'Wajib'
+      },
+      {
+        kode: 'IF-211',
+        nama: 'Etika Profesi',
+        sks: '2',
+        semester: '8',
+        sifat: 'Wajib'
       }
     ]));
   }
 
-  // 5. Preseed Kelas (Classes)
-  if (!localStorage.getItem('pemsik_kelas')) {
+  // 5. Preseed Kelas (Classes - 11 items for pagination)
+  const kls = localStorage.getItem('pemsik_kelas');
+  if (!kls || JSON.parse(kls).length < 10) {
     localStorage.setItem('pemsik_kelas', JSON.stringify([
       {
         kode: 'K-101',
@@ -118,6 +367,62 @@ const seedDatabase = () => {
         dosenWali: 'Siti Aminah, M.T.',
         jumlahMahasiswa: 18,
         status: false
+      },
+      {
+        kode: 'K-104',
+        nama: 'IF-2A',
+        dosenWali: 'Diana Lestari, M.T.',
+        jumlahMahasiswa: 30,
+        status: true
+      },
+      {
+        kode: 'K-105',
+        nama: 'SI-4B',
+        dosenWali: 'Eko Prasetyo, M.Cs.',
+        jumlahMahasiswa: 26,
+        status: true
+      },
+      {
+        kode: 'K-106',
+        nama: 'TK-2A',
+        dosenWali: 'Gunawan, M.T.',
+        jumlahMahasiswa: 22,
+        status: true
+      },
+      {
+        kode: 'K-107',
+        nama: 'IF-6B',
+        dosenWali: 'Haryanto, Ph.D.',
+        jumlahMahasiswa: 29,
+        status: true
+      },
+      {
+        kode: 'K-108',
+        nama: 'SI-6A',
+        dosenWali: 'Indah Permata, M.T.',
+        jumlahMahasiswa: 25,
+        status: false
+      },
+      {
+        kode: 'K-109',
+        nama: 'TK-4B',
+        dosenWali: 'Joko Susilo, M.Cs.',
+        jumlahMahasiswa: 20,
+        status: true
+      },
+      {
+        kode: 'K-110',
+        nama: 'IF-8A',
+        dosenWali: 'Diana Lestari, M.T.',
+        jumlahMahasiswa: 15,
+        status: true
+      },
+      {
+        kode: 'K-111',
+        nama: 'SI-8B',
+        dosenWali: 'Budi Santoso, M.Kom.',
+        jumlahMahasiswa: 12,
+        status: true
       }
     ]));
   }
@@ -605,6 +910,9 @@ const mockAdapter = async (config) => {
 
   throw new Error(`Endpoint mock [${method.toUpperCase()}] ${url} tidak terdaftar!`);
 };
+
+// Execute seeding
+seedDatabase();
 
 // Create Axios Instance
 const api = axios.create({

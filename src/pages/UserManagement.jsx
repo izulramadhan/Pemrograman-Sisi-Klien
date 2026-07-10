@@ -4,6 +4,7 @@ import { Search, Check, Loader2, ShieldAlert } from 'lucide-react';
 import Card from '../components/molecules/Card';
 import UserTable from './UserTable';
 import UserModal from './UserModal';
+import Pagination from '../components/molecules/Pagination';
 import api from '../services/api';
 import './MahasiswaPage.css'; // Reuse common layout styles
 import './UserManagement.css';
@@ -30,9 +31,14 @@ const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
+
+  // Search & Pagination states
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState('');
+
+  const itemsPerPage = 5;
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -56,11 +62,9 @@ const UserManagement = () => {
     try {
       const response = await api.put(`/api/users/${selectedUser.username}`, updatedData);
       
-      // Update local state list
       setUsers(prev => prev.map(u => u.username === selectedUser.username ? response.data : u));
       showToast(`Hak akses pengguna ${selectedUser.name} berhasil diperbarui!`);
       
-      // If the admin edited their own account, we should also trigger updates or notify
       if (selectedUser.username.toLowerCase() === user.username?.toLowerCase() || selectedUser.username.toLowerCase() === 'admin') {
         showToast('Perubahan akses akun Anda berhasil disimpan. Silakan masuk kembali untuk sinkronisasi penuh.');
       }
@@ -80,11 +84,24 @@ const UserManagement = () => {
     setTimeout(() => setToastMessage(''), 4000);
   };
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to page 1 on search
+  };
+
   const filteredUsers = users.filter(
     u =>
       u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.role.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Slicing data for active page
+  const totalItems = filteredUsers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   return (
@@ -110,7 +127,7 @@ const UserManagement = () => {
             type="text"
             placeholder="Cari berdasarkan nama, username, atau role..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="table-search-input"
             style={{ width: '400px' }}
           />
@@ -122,10 +139,18 @@ const UserManagement = () => {
           <Loader2 className="spinner-icon animate-spin" size={32} style={{ color: 'var(--primary)', animation: 'btn-spin 1s linear infinite' }} />
         </div>
       ) : (
-        <UserTable
-          users={filteredUsers}
-          openEditModal={openEditModal}
-        />
+        <>
+          <UserTable
+            users={paginatedUsers}
+            openEditModal={openEditModal}
+          />
+          
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
       )}
 
       <UserModal

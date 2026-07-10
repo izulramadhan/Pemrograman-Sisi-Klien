@@ -4,6 +4,7 @@ import { Plus, Search, Check, Loader2 } from 'lucide-react';
 import Button from '../components/atoms/Button';
 import MataKuliahTable from './MataKuliahTable';
 import MataKuliahModal from './MataKuliahModal';
+import Pagination from '../components/molecules/Pagination';
 import { 
   useGetMataKuliah, 
   useAddMataKuliah, 
@@ -26,14 +27,20 @@ const MataKuliah = () => {
 
   const [selectedMK, setSelectedMK] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
+
+  // Search & Pagination states
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [toastMessage, setToastMessage] = useState('');
+
+  const itemsPerPage = 5;
 
   // storeMataKuliah (POST)
   const storeMataKuliah = async (newMK) => {
     try {
       await addMKMutation.mutateAsync(newMK);
       showToast(`Mata Kuliah ${newMK.nama} berhasil ditambahkan!`);
+      setCurrentPage(1); // Go back to first page
     } catch (err) {
       showToast(err.response?.data?.message || 'Gagal menambahkan mata kuliah.');
     }
@@ -53,6 +60,11 @@ const MataKuliah = () => {
   const deleteMataKuliah = async (kode) => {
     try {
       await deleteMKMutation.mutateAsync(kode);
+      const remainingItems = filteredMK.length - 1;
+      const maxPages = Math.ceil(remainingItems / itemsPerPage) || 1;
+      if (currentPage > maxPages) {
+        setCurrentPage(maxPages);
+      }
     } catch (err) {
       showToast('Gagal menghapus mata kuliah.');
     }
@@ -95,11 +107,24 @@ const MataKuliah = () => {
     setTimeout(() => setToastMessage(''), 3000);
   };
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to page 1 on search
+  };
+
   const filteredMK = matakuliah.filter(
     m =>
       m.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.kode.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.sifat.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Slicing data for active page
+  const totalItems = filteredMK.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const paginatedMK = filteredMK.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   return (
@@ -131,7 +156,7 @@ const MataKuliah = () => {
             type="text"
             placeholder="Cari berdasarkan Kode, Nama, atau Sifat Mata Kuliah..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="table-search-input"
             style={{ width: '400px' }}
           />
@@ -143,13 +168,21 @@ const MataKuliah = () => {
           <Loader2 className="spinner-icon animate-spin" size={32} style={{ color: 'var(--primary)', animation: 'btn-spin 1s linear infinite' }} />
         </div>
       ) : (
-        <MataKuliahTable
-          matakuliah={filteredMK}
-          openEditModal={openEditModal}
-          onDelete={handleDelete}
-          canWrite={canWrite}
-          canDelete={canDelete}
-        />
+        <>
+          <MataKuliahTable
+            matakuliah={paginatedMK}
+            openEditModal={openEditModal}
+            onDelete={handleDelete}
+            canWrite={canWrite}
+            canDelete={canDelete}
+          />
+          
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
       )}
 
       <MataKuliahModal

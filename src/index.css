@@ -99,3 +99,18 @@ html, body {
   display: flex;
   flex-direction: column;
 }
+
+/* Pagination premium styling hover states */
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--primary-hover) !important;
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  color: var(--primary-hover) !important;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+}
+
+.pagination-btn.active:hover {
+  background-color: var(--primary-hover) !important;
+  color: #0d0d13 !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+

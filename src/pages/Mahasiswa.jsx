@@ -4,6 +4,7 @@ import { Plus, Search, Check, Loader2 } from 'lucide-react';
 import Button from '../components/atoms/Button';
 import MahasiswaModal from './MahasiswaModal';
 import MahasiswaTable from './MahasiswaTable';
+import Pagination from '../components/molecules/Pagination';
 import { 
   useGetMahasiswa, 
   useAddMahasiswa, 
@@ -29,9 +30,12 @@ const Mahasiswa = () => {
   // state modal
   const [isModalOpen, setModalOpen] = useState(false);
 
-  // Search input state
+  // Search & Pagination states
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [toastMessage, setToastMessage] = useState('');
+
+  const itemsPerPage = 5;
 
   // storeMahasiswa
   const storeMahasiswa = async (newMahasiswa) => {
@@ -45,6 +49,7 @@ const Mahasiswa = () => {
     try {
       await addMahasiswaMutation.mutateAsync(newStudent);
       showToast(`Mahasiswa ${newStudent.name} berhasil ditambahkan!`);
+      setCurrentPage(1); // Go back to first page
     } catch (err) {
       showToast(err.response?.data?.message || 'Gagal menambahkan mahasiswa.');
     }
@@ -60,7 +65,7 @@ const Mahasiswa = () => {
     };
     try {
       await updateMahasiswaMutation.mutateAsync(updatePayload);
-      showToast(`Data mahasiswa ${updatedMhs => updatedMahasiswa.name} berhasil diperbarui!`);
+      showToast(`Data mahasiswa ${updatedMahasiswa.name} berhasil diperbarui!`);
     } catch (err) {
       showToast(err.response?.data?.message || 'Gagal memperbarui mahasiswa.');
     }
@@ -70,6 +75,12 @@ const Mahasiswa = () => {
   const deleteMahasiswa = async (nim) => {
     try {
       await deleteMahasiswaMutation.mutateAsync(nim);
+      // Adjust current page if items on current page reduce to zero
+      const remainingItems = filteredMahasiswa.length - 1;
+      const maxPages = Math.ceil(remainingItems / itemsPerPage) || 1;
+      if (currentPage > maxPages) {
+        setCurrentPage(maxPages);
+      }
     } catch (err) {
       showToast('Gagal menghapus data mahasiswa.');
     }
@@ -91,12 +102,10 @@ const Mahasiswa = () => {
   // handleSubmit
   const handleSubmit = (formState) => {
     if (selectedMahasiswa) {
-      // update
       const confirmUpdate = window.confirm(`Apakah Anda yakin ingin memperbarui data mahasiswa: ${formState.name}?`);
       if (!confirmUpdate) return;
       updateMahasiswa(selectedMahasiswa.nim, formState);
     } else {
-      // tambah
       storeMahasiswa(formState);
     }
   };
@@ -118,11 +127,24 @@ const Mahasiswa = () => {
     setTimeout(() => setToastMessage(''), 3000);
   };
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to page 1 on search
+  };
+
   const filteredMahasiswa = mahasiswa.filter(
     (s) =>
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.nim.includes(searchQuery) ||
       s.prodi.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Slicing data for active page list views
+  const totalItems = filteredMahasiswa.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const paginatedMahasiswa = filteredMahasiswa.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   return (
@@ -154,7 +176,7 @@ const Mahasiswa = () => {
             type="text"
             placeholder="Cari berdasarkan NIM, Nama, atau Program Studi..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="table-search-input"
             style={{ width: '400px' }}
           />
@@ -166,13 +188,21 @@ const Mahasiswa = () => {
           <Loader2 className="spinner-icon animate-spin" size={32} style={{ color: 'var(--primary)', animation: 'btn-spin 1s linear infinite' }} />
         </div>
       ) : (
-        <MahasiswaTable 
-          mahasiswa={filteredMahasiswa} 
-          openEditModal={openEditModal} 
-          onDelete={handleDelete}
-          canWrite={canWrite}
-          canDelete={canDelete}
-        />
+        <>
+          <MahasiswaTable 
+            mahasiswa={paginatedMahasiswa} 
+            openEditModal={openEditModal} 
+            onDelete={handleDelete}
+            canWrite={canWrite}
+            canDelete={canDelete}
+          />
+          
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
       )}
 
       {/* Renders MahasiswaModal component */}

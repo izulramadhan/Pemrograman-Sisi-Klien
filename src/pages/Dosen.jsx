@@ -4,6 +4,7 @@ import { Plus, Search, Check, Loader2 } from 'lucide-react';
 import Button from '../components/atoms/Button';
 import DosenTable from './DosenTable';
 import DosenModal from './DosenModal';
+import Pagination from '../components/molecules/Pagination';
 import { 
   useGetDosen, 
   useAddDosen, 
@@ -26,14 +27,20 @@ const Dosen = () => {
 
   const [selectedDosen, setSelectedDosen] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
+
+  // Search & Pagination states
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [toastMessage, setToastMessage] = useState('');
+
+  const itemsPerPage = 5;
 
   // storeDosen (POST)
   const storeDosen = async (newDosen) => {
     try {
       await addDosenMutation.mutateAsync(newDosen);
       showToast(`Dosen ${newDosen.nama} berhasil ditambahkan!`);
+      setCurrentPage(1); // Go back to first page
     } catch (err) {
       showToast(err.response?.data?.message || 'Gagal menambahkan dosen.');
     }
@@ -53,6 +60,11 @@ const Dosen = () => {
   const deleteDosen = async (nidn) => {
     try {
       await deleteDosenMutation.mutateAsync(nidn);
+      const remainingItems = filteredDosen.length - 1;
+      const maxPages = Math.ceil(remainingItems / itemsPerPage) || 1;
+      if (currentPage > maxPages) {
+        setCurrentPage(maxPages);
+      }
     } catch (err) {
       showToast('Gagal menghapus dosen.');
     }
@@ -95,11 +107,24 @@ const Dosen = () => {
     setTimeout(() => setToastMessage(''), 3000);
   };
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to page 1 on search
+  };
+
   const filteredDosen = dosen.filter(
     d =>
       d.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
       d.nidn.includes(searchQuery) ||
       d.keahlian.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Slicing data for active page
+  const totalItems = filteredDosen.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const paginatedDosen = filteredDosen.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   return (
@@ -131,7 +156,7 @@ const Dosen = () => {
             type="text"
             placeholder="Cari berdasarkan NIDN, Nama, atau Bidang Keahlian..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="table-search-input"
             style={{ width: '400px' }}
           />
@@ -143,13 +168,21 @@ const Dosen = () => {
           <Loader2 className="spinner-icon animate-spin" size={32} style={{ color: 'var(--primary)', animation: 'btn-spin 1s linear infinite' }} />
         </div>
       ) : (
-        <DosenTable
-          dosen={filteredDosen}
-          openEditModal={openEditModal}
-          onDelete={handleDelete}
-          canWrite={canWrite}
-          canDelete={canDelete}
-        />
+        <>
+          <DosenTable
+            dosen={paginatedDosen}
+            openEditModal={openEditModal}
+            onDelete={handleDelete}
+            canWrite={canWrite}
+            canDelete={canDelete}
+          />
+          
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
       )}
 
       <DosenModal
