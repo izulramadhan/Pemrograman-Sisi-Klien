@@ -18,6 +18,7 @@ const AdminLayout = ({ user, onLogout }) => {
         isOpen={sidebarOpen} 
         onToggle={toggleSidebar} 
         onLogout={onLogout}
+        user={user}
       />
       
       <div className={`admin-main-container ${sidebarOpen ? 'main-expanded' : 'main-collapsed'}`}>

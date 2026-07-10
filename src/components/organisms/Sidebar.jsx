@@ -5,6 +5,7 @@ import {
   GraduationCap,
   UserCheck,
   BookOpen,
+  Users,
   Settings, 
   Shield, 
   LogOut,
@@ -14,7 +15,9 @@ import {
 } from 'lucide-react';
 import './Sidebar.css';
 
-const Sidebar = ({ isOpen, onToggle, onLogout }) => {
+const Sidebar = ({ isOpen, onToggle, onLogout, user }) => {
+  const isSuperAdmin = user?.role === 'Super Admin';
+
   return (
     <aside className={`organism-sidebar ${isOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
       <div className="sidebar-brand">
@@ -60,6 +63,16 @@ const Sidebar = ({ isOpen, onToggle, onLogout }) => {
           <BookOpen size={20} />
           {isOpen && <span className="nav-text">Mata Kuliah</span>}
         </NavLink>
+
+        {isSuperAdmin && (
+          <NavLink 
+            to="/admin/users" 
+            className={({ isActive }) => `nav-item ${isActive ? 'nav-item-active' : ''}`}
+          >
+            <Users size={20} />
+            {isOpen && <span className="nav-text">Akses Kontrol</span>}
+          </NavLink>
+        )}
 
         <NavLink 
           to="/admin/system" 

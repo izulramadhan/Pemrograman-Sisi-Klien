@@ -2,7 +2,7 @@ import React from 'react';
 import { Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import Card from '../components/molecules/Card';
 
-const MataKuliahTable = ({ matakuliah, openEditModal, onDelete }) => {
+const MataKuliahTable = ({ matakuliah, openEditModal, onDelete, canWrite = true, canDelete = true }) => {
   return (
     <Card title="Database Mata Kuliah" subtitle="Kelola kurikulum, beban SKS, semester, dan jenis mata kuliah">
       <div className="table-responsive-wrapper">
@@ -32,20 +32,24 @@ const MataKuliahTable = ({ matakuliah, openEditModal, onDelete }) => {
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <div className="table-action-group">
-                      <button
-                        className="action-icon-btn edit"
-                        onClick={() => openEditModal(item.kode)}
-                        title="Edit Mata Kuliah"
-                      >
-                        <Edit2 size={15} />
-                      </button>
-                      <button
-                        className="action-icon-btn delete"
-                        onClick={() => onDelete(item.kode)}
-                        title="Hapus Mata Kuliah"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      {canWrite && (
+                        <button
+                          className="action-icon-btn edit"
+                          onClick={() => openEditModal(item.kode)}
+                          title="Edit Mata Kuliah"
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          className="action-icon-btn delete"
+                          onClick={() => onDelete(item.kode)}
+                          title="Hapus Mata Kuliah"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

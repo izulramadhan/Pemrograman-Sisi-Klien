@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Plus, Search, Check, Loader2 } from 'lucide-react';
 import Button from '../components/atoms/Button';
 import MataKuliahTable from './MataKuliahTable';
@@ -8,6 +9,10 @@ import './MahasiswaPage.css'; // Reuse table list components styling
 import './MataKuliah.css';
 
 const MataKuliah = () => {
+  const { user } = useOutletContext();
+  const canWrite = user?.permissions?.includes('write');
+  const canDelete = user?.permissions?.includes('delete');
+
   const [matakuliah, setMatakuliah] = useState([]);
   const [selectedMK, setSelectedMK] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -122,10 +127,12 @@ const MataKuliah = () => {
           <h2 className="admin-page-title">Kelola Mata Kuliah</h2>
           <p className="admin-page-subtitle">Daftar silabus mata kuliah, bobot SKS, semester dan sifat Wajib/Pilihan</p>
         </div>
-        <Button onClick={openAddModal} className="add-user-top-btn">
-          <Plus size={18} style={{ marginRight: '0.5rem' }} />
-          Tambah Mata Kuliah
-        </Button>
+        {canWrite && (
+          <Button onClick={openAddModal} className="add-user-top-btn">
+            <Plus size={18} style={{ marginRight: '0.5rem' }} />
+            Tambah Mata Kuliah
+          </Button>
+        )}
       </div>
 
       <div className="table-controls" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
@@ -151,6 +158,8 @@ const MataKuliah = () => {
           matakuliah={filteredMK}
           openEditModal={openEditModal}
           onDelete={handleDelete}
+          canWrite={canWrite}
+          canDelete={canDelete}
         />
       )}
 

@@ -7,6 +7,7 @@ import Mahasiswa from './pages/Mahasiswa';
 import MahasiswaDetailPage from './pages/MahasiswaDetailPage';
 import Dosen from './pages/Dosen';
 import MataKuliah from './pages/MataKuliah';
+import UserManagement from './pages/UserManagement';
 import AuthLayout from './components/templates/AuthLayout';
 import AdminLayout from './components/templates/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -60,6 +61,7 @@ function App() {
           <Route path="mahasiswa/:id" element={<MahasiswaDetailPage />} />
           <Route path="dosen" element={<Dosen />} />
           <Route path="matakuliah" element={<MataKuliah />} />
+          <Route path="users" element={<UserManagement />} />
         </Route>
 
         {/* Fallback routes */}

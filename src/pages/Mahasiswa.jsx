@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Plus, Search, Check } from 'lucide-react';
 import Button from '../components/atoms/Button';
 import MahasiswaModal from './MahasiswaModal';
@@ -7,6 +8,10 @@ import initialStudents from '../data/students.json';
 import './MahasiswaPage.css'; // Reuse styles
 
 const Mahasiswa = () => {
+  const { user } = useOutletContext();
+  const canWrite = user?.permissions?.includes('write');
+  const canDelete = user?.permissions?.includes('delete');
+
   // state mahasiswa
   const [mahasiswa, setMahasiswa] = useState(() => {
     const saved = localStorage.getItem('pemsik_students');
@@ -128,10 +133,12 @@ const Mahasiswa = () => {
           <h2 className="admin-page-title">Kelola Mahasiswa</h2>
           <p className="admin-page-subtitle">Daftar mahasiswa terdaftar beserta informasi studi dan status akademik</p>
         </div>
-        <Button onClick={openAddModal} className="add-user-top-btn">
-          <Plus size={18} style={{ marginRight: '0.5rem' }} />
-          Tambah Mahasiswa
-        </Button>
+        {canWrite && (
+          <Button onClick={openAddModal} className="add-user-top-btn">
+            <Plus size={18} style={{ marginRight: '0.5rem' }} />
+            Tambah Mahasiswa
+          </Button>
+        )}
       </div>
 
       <div className="table-controls" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
@@ -152,7 +159,9 @@ const Mahasiswa = () => {
       <MahasiswaTable 
         mahasiswa={filteredMahasiswa} 
         openEditModal={openEditModal} 
-        onDelete={handleDelete} 
+        onDelete={handleDelete}
+        canWrite={canWrite}
+        canDelete={canDelete}
       />
 
       {/* Renders MahasiswaModal component */}

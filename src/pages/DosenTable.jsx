@@ -2,7 +2,7 @@ import React from 'react';
 import { Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import Card from '../components/molecules/Card';
 
-const DosenTable = ({ dosen, openEditModal, onDelete }) => {
+const DosenTable = ({ dosen, openEditModal, onDelete, canWrite = true, canDelete = true }) => {
   return (
     <Card title="Database Dosen" subtitle="Cari, tambah, edit, dan hapus data tenaga pengajar (dosen)">
       <div className="table-responsive-wrapper">
@@ -36,20 +36,24 @@ const DosenTable = ({ dosen, openEditModal, onDelete }) => {
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <div className="table-action-group">
-                      <button
-                        className="action-icon-btn edit"
-                        onClick={() => openEditModal(item.nidn)}
-                        title="Edit Dosen"
-                      >
-                        <Edit2 size={15} />
-                      </button>
-                      <button
-                        className="action-icon-btn delete"
-                        onClick={() => onDelete(item.nidn)}
-                        title="Hapus Dosen"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      {canWrite && (
+                        <button
+                          className="action-icon-btn edit"
+                          onClick={() => openEditModal(item.nidn)}
+                          title="Edit Dosen"
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          className="action-icon-btn delete"
+                          onClick={() => onDelete(item.nidn)}
+                          title="Hapus Dosen"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

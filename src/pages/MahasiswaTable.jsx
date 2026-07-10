@@ -3,7 +3,7 @@ import { Eye, Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Card from '../components/molecules/Card';
 
-const MahasiswaTable = ({ mahasiswa, openEditModal, onDelete }) => {
+const MahasiswaTable = ({ mahasiswa, openEditModal, onDelete, canWrite = true, canDelete = true }) => {
   const handleDelete = (nim) => {
     onDelete(nim);
   };
@@ -45,20 +45,26 @@ const MahasiswaTable = ({ mahasiswa, openEditModal, onDelete }) => {
                       >
                         <Eye size={15} />
                       </Link>
-                      <button
-                        className="action-icon-btn edit"
-                        onClick={() => openEditModal(item.nim)}
-                        title="Edit"
-                      >
-                        <Edit2 size={15} />
-                      </button>
-                      <button
-                        className="action-icon-btn delete"
-                        onClick={() => handleDelete(item.nim)}
-                        title="Hapus"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      
+                      {canWrite && (
+                        <button
+                          className="action-icon-btn edit"
+                          onClick={() => openEditModal(item.nim)}
+                          title="Edit"
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                      )}
+
+                      {canDelete && (
+                        <button
+                          className="action-icon-btn delete"
+                          onClick={() => handleDelete(item.nim)}
+                          title="Hapus"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

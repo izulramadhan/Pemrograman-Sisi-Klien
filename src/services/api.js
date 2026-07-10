@@ -11,6 +11,7 @@ const seedDatabase = () => {
         name: 'Azizul Izul',
         email: 'admin@pemsik.com',
         role: 'Super Admin',
+        permissions: ['read', 'write', 'delete'],
         avatar: ''
       },
       {
@@ -19,6 +20,16 @@ const seedDatabase = () => {
         name: 'Dr. Ir. Budi Santoso',
         email: 'budi.santoso@pemsik.com',
         role: 'Dosen',
+        permissions: ['read', 'write'],
+        avatar: ''
+      },
+      {
+        username: 'viewer',
+        password: 'viewerpassword',
+        name: 'Siti Rahma',
+        email: 'siti.rahma@pemsik.com',
+        role: 'Viewer',
+        permissions: ['read'],
         avatar: ''
       }
     ]));
@@ -84,8 +95,8 @@ seedDatabase();
 
 // --- AXIOS CUSTOM MOCK ADAPTER ---
 const mockAdapter = async (config) => {
-  // Simulate network latency (250ms - 500ms)
-  await new Promise((resolve) => setTimeout(resolve, 200 + Math.random() * 300));
+  // Simulate network latency (150ms - 300ms)
+  await new Promise((resolve) => setTimeout(resolve, 150 + Math.random() * 150));
 
   const { url, method, data } = config;
   const parsedData = data ? JSON.parse(data) : null;
@@ -128,7 +139,15 @@ const mockAdapter = async (config) => {
       };
     }
 
-    const newUser = { name, username, email, password, role: role || 'Viewer', avatar: '' };
+    // Map default permissions based on chosen role
+    let permissions = ['read'];
+    if (role === 'Super Admin') {
+      permissions = ['read', 'write', 'delete'];
+    } else if (role === 'Dosen') {
+      permissions = ['read', 'write'];
+    }
+
+    const newUser = { name, username, email, password, role: role || 'Viewer', permissions, avatar: '' };
     users.push(newUser);
     localStorage.setItem('pemsik_users', JSON.stringify(users));
 
@@ -169,7 +188,51 @@ const mockAdapter = async (config) => {
     }
   }
 
-  // 3. GET DOSEN (GET /api/dosen)
+  // 3. GET ALL USERS (GET /api/users)
+  if (url === '/api/users' && method === 'get') {
+    const users = JSON.parse(localStorage.getItem('pemsik_users') || '[]');
+    return {
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      data: users
+    };
+  }
+
+  // 4. UPDATE USER ROLE & PERMISSIONS (PUT /api/users/:username)
+  if (url.startsWith('/api/users/') && method === 'put') {
+    const username = url.split('/').pop().toLowerCase();
+    const users = JSON.parse(localStorage.getItem('pemsik_users') || '[]');
+    const { role, permissions } = parsedData;
+
+    const index = users.findIndex(u => u.username.toLowerCase() === username);
+    if (index !== -1) {
+      users[index] = {
+        ...users[index],
+        role,
+        permissions: permissions || ['read']
+      };
+      localStorage.setItem('pemsik_users', JSON.stringify(users));
+      return {
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+        data: users[index]
+      };
+    } else {
+      return {
+        status: 404,
+        statusText: 'Not Found',
+        headers: {},
+        config,
+        data: { message: 'User tidak ditemukan!' }
+      };
+    }
+  }
+
+  // 5. GET DOSEN (GET /api/dosen)
   if (url === '/api/dosen' && method === 'get') {
     const dosen = JSON.parse(localStorage.getItem('pemsik_dosen') || '[]');
     return {
@@ -181,7 +244,7 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // 4. ADD DOSEN (POST /api/dosen)
+  // 6. ADD DOSEN (POST /api/dosen)
   if (url === '/api/dosen' && method === 'post') {
     const dosen = JSON.parse(localStorage.getItem('pemsik_dosen') || '[]');
     const newDosen = parsedData;
@@ -209,7 +272,7 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // 5. UPDATE DOSEN (PUT /api/dosen/:nidn)
+  // 7. UPDATE DOSEN (PUT /api/dosen/:nidn)
   if (url.startsWith('/api/dosen/') && method === 'put') {
     const nidn = url.split('/').pop();
     const dosen = JSON.parse(localStorage.getItem('pemsik_dosen') || '[]');
@@ -237,7 +300,7 @@ const mockAdapter = async (config) => {
     }
   }
 
-  // 6. DELETE DOSEN (DELETE /api/dosen/:nidn)
+  // 8. DELETE DOSEN (DELETE /api/dosen/:nidn)
   if (url.startsWith('/api/dosen/') && method === 'delete') {
     const nidn = url.split('/').pop();
     const dosen = JSON.parse(localStorage.getItem('pemsik_dosen') || '[]');
@@ -254,7 +317,7 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // 7. GET MATA KULIAH (GET /api/matakuliah)
+  // 9. GET MATA KULIAH (GET /api/matakuliah)
   if (url === '/api/matakuliah' && method === 'get') {
     const matakuliah = JSON.parse(localStorage.getItem('pemsik_matakuliah') || '[]');
     return {
@@ -266,7 +329,7 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // 8. ADD MATA KULIAH (POST /api/matakuliah)
+  // 10. ADD MATA KULIAH (POST /api/matakuliah)
   if (url === '/api/matakuliah' && method === 'post') {
     const matakuliah = JSON.parse(localStorage.getItem('pemsik_matakuliah') || '[]');
     const newMK = parsedData;
@@ -294,7 +357,7 @@ const mockAdapter = async (config) => {
     };
   }
 
-  // 9. UPDATE MATA KULIAH (PUT /api/matakuliah/:kode)
+  // 11. UPDATE MATA KULIAH (PUT /api/matakuliah/:kode)
   if (url.startsWith('/api/matakuliah/') && method === 'put') {
     const kode = url.split('/').pop();
     const matakuliah = JSON.parse(localStorage.getItem('pemsik_matakuliah') || '[]');
@@ -322,7 +385,7 @@ const mockAdapter = async (config) => {
     }
   }
 
-  // 10. DELETE MATA KULIAH (DELETE /api/matakuliah/:kode)
+  // 12. DELETE MATA KULIAH (DELETE /api/matakuliah/:kode)
   if (url.startsWith('/api/matakuliah/') && method === 'delete') {
     const kode = url.split('/').pop();
     const matakuliah = JSON.parse(localStorage.getItem('pemsik_matakuliah') || '[]');
